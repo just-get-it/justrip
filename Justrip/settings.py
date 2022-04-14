@@ -82,9 +82,9 @@ WSGI_APPLICATION = 'Justrip.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'justrip',
-        'USER': 'justgetit',
-        'PASSWORD': 'justgetit-justrip@2022',
+        'NAME': 'just_cabs',
+        'USER': 'postgres',
+        'PASSWORD': 'vigneshnu77',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
