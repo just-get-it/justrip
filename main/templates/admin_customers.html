@@ -1,0 +1,207 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Admin Customer{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <h2>Admin Panel</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row mb-5">
+            <div class="col-md-4">
+                <label>Apply Filter</label>
+                <select class="form-control" onChange="window.location.href=this.value">
+                    <option value="{% url 'admin_customers' %}">All Cutomers</option>
+                    {% if verified_customers %}
+                    <option value="{% url 'admin_verified_customers' %}" selected>Verified Cutomers</option>
+                    {% else %}
+                    <option value="{% url 'admin_verified_customers' %}">Verified Cutomers</option>
+                    {% endif %}
+                    {% if unverified_customers %}
+                    <option value="{% url 'admin_unverified_customers' %}" selected>Unverified Cutomers</option>
+                    {% else %}
+                    <option value="{% url 'admin_unverified_customers' %}">Unverified Cutomers</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class = "my-5">
+            <h4 class="text-white">Change view</h4>
+            <button class="btn btn-primary" onclick="grid_view()">Grid view</button>
+            <button class="btn btn-primary" onclick="table_view()">List view</button>
+        </div>
+        <div class="row table_view mt-4"  style="display: none">
+            <table class="table table-striped table-dark">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Number</th>
+                        <th scope="col">Change status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <th scope="row">{{customer.user.name}}</th>
+                            {% if customer.is_verified %}
+                            <td class="text-success">Verified</td>
+                            {% else %}
+                            <td class="text-danger">Pending Verification</td>
+                            {% endif %}
+                            <td>{{customer.user.contact}}</td>
+                            <td><form method="POST" class="mb-0">
+                                {% csrf_token %}
+                                    {% if customer.is_verified %}
+                                        {% if staff %}
+                                            <button class="btn btn-danger" disabled>Un-Verify</button>
+                                        {% else %}
+                                        <button class="btn btn-danger" value="{{customer.id}}" name="unverify">Un-Verify</button> {% endif %}
+                                    {% else %}
+                                        <button class="btn btn-success" value="{{customer.id}}" name="verify">Verify</button>
+                                    {% endif %}
+                            </form></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+              </table>
+        </div>
+        <div class="row grid_view mt-4">
+            {% for customer in customers %}
+            <div class="col-xl-3 col-lg-6">
+                <div class="card card-profile">
+                    <div class="card-avatar">
+                        {% if customer.profile_picture %}
+                        <img id="profile_picture" class="img" src="{{customer.profile_picture.url}}"> {% else %}
+                        <img src="{% static 'img/profile_pic_default.png' %}">{% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h4 class="card-title">{{customer.user.name}}</h4>
+                        {% if customer.is_verified %}
+                        <h5 class="card-category">
+                            <span class="text-success">Verified</span></h5>
+                        {% else %}
+                        <h5 class="card-category">
+                            <span class="text-danger">Pending Verification</span></h5>
+                        {% endif %}
+                        <h4 class="card-title"><strong>Phone: </strong>{{customer.user.contact}}</p>
+                            <!-- <a class="btn btn-primary" href="#" role="button">
+                            View
+                        </a>  -->
+                            {% if customer.is_verified %}
+                            <form method="POST">
+                                {% csrf_token %} {% if staff %}
+                                <div class="col-6">
+                                    <button class="btn btn-danger" disabled>Un-Verify</button>
+                                </div>
+                                {% else %}
+                                <button type="submit" value="{{customer.id}}" class="btn btn-danger" name="unverify">Un-Verify</button> {% endif %}
+                            </form>
+                            {% else %}
+                            <form method="POST">
+                                {% csrf_token %}
+                                <button type="submit" value="{{customer.id}}" class="btn btn-success" name="verify">Verify</button>
+                            </form>
+                            {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    
+    function grid_view(){
+        $('.table_view').hide();
+        $('.grid_view').show();
+
+    }
+    function table_view(){
+        $('.grid_view').hide();
+        $('.table_view').css('display','flex');
+    }
+</script>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_unverified_trips' %}">
+            <i class="material-icons">navigation</i>
+            <p>Trips</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_customers' %}">
+            <i class="material-icons">people_alt</i>
+            <p>Customers</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'admin_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>Cars</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_owners' %}">
+            <i class="material-icons">person</i>
+            <p>Owners</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_car_types' %}">
+            <i class="material-icons">local_taxi</i>
+            <p>Car Types</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_charts' %}">
+            <i class="material-icons">assessment</i>
+            <p>Graphs</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

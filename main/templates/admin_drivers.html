@@ -1,0 +1,285 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Admin Drivers{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <br>
+        <br>
+        <div class="row mb-5">
+            <div class="col-md-4">
+                <label>Apply Filter</label>
+                <select class="form-control" onChange="window.location.href=this.value">
+                    <option value="select">Select option</option>
+                    <option value="{% url 'admin_drivers' %}">All Drivers</option>
+                    {% if verified_drivers %}
+                    <option value="{% url 'admin_verified_drivers' %}" selected>Verified Drivers</option>
+                    {% else %}
+                    <option value="{% url 'admin_verified_drivers' %}">Verified Drivers</option>
+                    {% endif %}
+                    {% if unverified_drivers %}
+                    <option value="{% url 'admin_unverified_drivers' %}" selected>Unverified Drivers</option>
+                    {% else %}
+                    <option value="{% url 'admin_unverified_drivers' %}">Unverified Drivers</option>
+                    {% endif %}
+                    {% if active_drivers %}
+                    <option value="{% url 'admin_active_drivers' %}" selected>Active drivers</option>
+                    {% else %}
+                    <option value="{% url 'admin_active_drivers' %}">Active drivers</option>
+                    {% endif %}
+                    {% if inactive_drivers %}
+                    <option value="{% url 'admin_inactive_drivers' %}" selected>Inactive drivers</option>
+                    {% else %}
+                    <option value="{% url 'admin_inactive_drivers' %}">Inactive drivers</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <label>Select attribute to search</label>
+                <select class="form-control" id = "selected_attr" onChange="search_by_attr()">
+                    <option value="select">Select Attribute</option>
+                    <option value="phone">Phone number</option>
+                    <option value="user_id">User identity</option>
+                    <option value="email">Email</option>
+                    <option value="name">Name</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="row mb-9">
+            <div class="col-12">
+                <form method="post" action="/admin_drivers_by_attr/">
+                    {% csrf_token %}
+                    <div class="row mt-4" id = "phone" style="display: none">
+                        <label for="">Enter phone numbers</label>
+                        <input class = "ml-4" name = "phone"/>
+                    </div>
+                    <div class="row mt-4" id = "user_id" style="display: none">
+                        <label for="">Enter user id</label>
+                        <input class = "ml-4" name = "user_id"/>
+                    </div>
+                    <div class="row mt-4" id = "email" style="display: none">
+                        <label for="">Enter email</label>
+                        <input class = "ml-4" name = "email"/>
+                    </div>
+                    <div class="row mt-4" id = "name" style="display: none">
+                        <label for="">Enter name</label>
+                        <input class = "ml-4" name = "name"/>
+                    </div>
+                    <button class = "btn btn-primary" type = "submit">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <div class = "mt-5">
+            <h4 class="text-white">Change view</h4>
+            <button class="btn btn-primary" onclick="grid_view()">Grid view</button>
+            <button class="btn btn-primary" onclick="table_view()">List view</button>
+        </div>
+        <div class="row table_view mt-4"  style="display: none">
+            <table class="table table-striped table-dark">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Phone</th>
+                        <th scope="col">Edit</th>
+                        <th scope="col">Change status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for driver in drivers %}
+                        <tr>
+                            <th scope="row">{{driver.name}}</th>
+                            {% if driver.is_verified %}
+                            <td class="text-success">Verified</td>
+                            {% else %}
+                            <td class="text-danger">Pending Verification</td>
+                            {% endif %}
+                            <td>{{driver.phone}}</td>
+                            <td><a class="btn btn-primary" href="{% url 'admin_driver_edit' driver_id=driver.id %}" role="button">
+                                {% if staff %}View{% else %}Edit{% endif %}</a></td>
+                            <td><form method="POST" class="mb-0">
+                                {% csrf_token %}
+                                    {% if driver.is_verified %}
+                                        {% if staff %}
+                                            <button class="btn btn-danger" disabled>Un-Verify</button>
+                                        {% else %}
+                                        <button class="btn btn-danger" value="{{driver.id}}" name="unverify">Un-Verify</button> {% endif %}
+                                    {% else %}
+                                        <button class="btn btn-success" value="{{driver.id}}" name="verify">Verify</button>
+                                    {% endif %}
+                            </form></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+              </table>
+        </div>
+        <div class="row grid_view mt-4">
+            {% for driver in drivers %}
+            <div class="col-xl-3 col-lg-6" id = "{{driver.id}}">
+                <div class="card card-profile">
+                    <div class="card-avatar">
+                        {% if driver.picture %}
+                        <img id="profile_picture" class="img" src="{{driver.picture.url}}"> {% else %}
+                        <img src="{% static 'img/profile_pic_default.png' %}">{% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h4 class="card-title" id = "name">{{driver.name}}</h4>
+                        {% if driver.is_verified %}
+                        <h5 class="card-category">
+                            <span class="text-success">Verified</span></h5>
+                        {% else %}
+                        <h5 class="card-category">
+                            <span class="text-danger">Pending Verification</span></h5>
+                        {% endif %}
+                        <h4 class="card-title" id = "phone"><strong>Phone: </strong>{{driver.phone}}</h4>
+                        <a class="btn btn-primary" href="{% url 'admin_driver_edit' driver_id=driver.id %}" role="button">
+                        {% if staff %}View{% else %}Edit{% endif %}</a>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="row">
+                                {% if driver.is_verified %}
+                                <div class="col">
+                                    {% if staff %}
+                                    <div class="col-6">
+                                        <button class="btn btn-danger" disabled>Un-Verify</button>
+                                    </div>
+                                    {% else %}
+                                    <button class="btn btn-danger" value="{{driver.id}}" name="unverify">Un-Verify</button> {% endif %}
+                                </div>
+                                {% else %}
+                                <div class="col">
+                                    <button class="btn btn-success" value="{{driver.id}}" name="verify">Verify</button>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_unverified_trips' %}">
+            <i class="material-icons">navigation</i>
+            <p>Trips</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_customers' %}">
+            <i class="material-icons">people_alt</i>
+            <p>Customers</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'admin_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>Cars</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_owners' %}">
+            <i class="material-icons">person</i>
+            <p>Owners</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_car_types' %}">
+            <i class="material-icons">local_taxi</i>
+            <p>Car Types</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_charts' %}">
+            <i class="material-icons">assessment</i>
+            <p>Graphs</p>
+        </a>
+    </li>
+</ul>
+
+<script type="text/javascript">
+    function search_by_attr(){
+        var attr = $('#selected_attr').find(":selected").val();
+        console.log(attr);
+        if(attr == "phone"){
+            $('#phone').css('display','block');
+            $('#user_id').hide();
+            $('#email').hide();
+            $('#name').hide();
+        }
+        if(attr == "user_id"){
+            $('#user_id').css('display','block');
+            $('#phone').hide();
+            $('#email').hide();
+            $('#name').hide();}
+        if(attr == "email"){
+            $('#email').css('display','block');
+            $('#user_id').hide();
+            $('#phone').hide();
+            $('#name').hide();}
+        if(attr == "name"){
+            $('#name').css('display','block');
+            $('#user_id').hide();
+            $('#email').hide();
+            $('#phone').hide();
+        }
+    }
+    function grid_view(){
+        $('.table_view').hide();
+        $('.grid_view').show();
+
+    }
+    function table_view(){
+        $('.grid_view').hide();
+        $('.table_view').css('display','flex');
+    }
+</script>
+
+{% endblock %} 

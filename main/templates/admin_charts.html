@@ -1,0 +1,180 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Admin Drivers{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4">
+                <label>Search by pickup location</label> 
+                <select class="form-control" id = "selected_attr" onChange="search_by_attr()">
+                    <option value="select">Select Attribute</option>
+                    <option value="customer">Customer</option>
+                    <option value="driver">Driver</option>
+                    <option value="owner">Owner</option>
+                    <option value="car">Car</option>
+                    <option value="trip">Trips</option>
+                </select>
+            </div>
+        </div>
+        <div class="row" style="height:400px; width:500px" id = "trip_chart_div">
+            <canvas id="trip_chart"></canvas>
+        </div>
+        <div class="row" style="height:400px; width:500px" id = "customer_chart_div">
+            <canvas id="customer_chart"></canvas>
+        </div>
+        <div class="row" style="height:400px; width:500px" id = "driver_chart_div">
+            <canvas id="driver_chart"></canvas>
+        </div>
+        <div class="row" style="height:400px; width:500px" id = "owner_chart_div">
+            <canvas id="owner_chart"></canvas>
+        </div>
+        <div class="row" style="height:400px; width:500px" id = "car_chart_div">
+            <canvas id="car_chart"></canvas>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.0/dist/chart.min.js"></script>
+<script>
+    function search_by_attr(){
+        var attr = $('#selected_attr').find(":selected").val();
+        console.log(attr);
+        if(attr == "customer"){
+            $('#customer_chart_div').css('display','block');
+            $('#driver_chart_div').hide();
+            $('#trip_chart_div').hide();
+            $('#car_chart_div').hide();
+            $('#owner_chart_div').hide();
+        }
+        if(attr == "driver"){
+            $('#driver_chart_div').css('display','block');
+            $('#customer_chart_div').hide();
+            $('#trip_chart_div').hide();
+            $('#car_chart_div').hide();
+            $('#owner_chart_div').hide();
+        }
+        if(attr == "owner"){
+            $('#owner_chart_div').css('display','block');
+            $('#customer_chart_div').hide();
+            $('#trip_chart_div').hide();
+            $('#driver_chart_div').hide();
+            $('#car_chart_div').hide();
+        }
+        if(attr == "car"){
+            $('#car_chart_div').css('display','block');
+            $('#customer_chart_div').hide();
+            $('#trip_chart_div').hide();
+            $('#driver_chart_div').hide();
+            $('#owner_chart_div').hide();
+        }
+        if(attr == "trip"){
+            $('#trip_chart_div').css('display','block');
+            $('#customer_chart_div').hide();
+            $('#owner_chart_div').hide();
+            $('#driver_chart_div').hide();
+            $('#car_chart_div').hide();
+        }
+    }
+        
+    draw_chart('trip_chart', {{trip_graph_data}}, "# of Trips Booked");
+    draw_chart('customer_chart', {{customer_graph_data}}, "# of Customers Registered");
+    draw_chart('owner_chart', {{owner_graph_data}}, "# of owner Registered");
+    draw_chart('driver_chart', {{driver_graph_data}}, "# of driver Registered");
+    draw_chart('car_chart', {{car_graph_data}}, "# of car Registered");
+
+    function draw_chart(id, data, label_txt) {
+        var ctx = document.getElementById(id).getContext('2d');
+        console.log(data);
+        console.log({{labels|safe }});
+        // console.log(JSON.parse('{{labels|safe }}'));
+
+        var labels = {{ labels|safe }};
+        // console.log(JSON.parse("{{ labels|safe }}"));
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label_txt,
+                    data: data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                maintainAspectRatio: false,
+                responsive: true,
+            }
+        });
+    }
+
+</script>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_unverified_trips' %}">
+            <i class="material-icons">navigation</i>
+            <p>Trips</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_customers' %}">
+            <i class="material-icons">people_alt</i>
+            <p>Customers</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'admin_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>Cars</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_owners' %}">
+            <i class="material-icons">person</i>
+            <p>Owners</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_car_types' %}">
+            <i class="material-icons">local_taxi</i>
+            <p>Car Types</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_charts' %}">
+            <i class="material-icons">local_taxi</i>
+            <p>Graphs</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_charts' %}">
+            <i class="material-icons">assessment</i>
+            <p>Graphs</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

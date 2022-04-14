@@ -1,0 +1,86 @@
+{% extends 'just_cabs_base.html' %} {% block title %}Justrip | Login{% endblock %}{% block content %} {% if exist %}
+
+<script type="text/javascript">
+    alert("Incorrect Username/Password !");
+</script>
+
+{% endif %}
+<!-- Including ajax -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<div class="row">
+    <div class="col-sm"></div>
+    <div class="col-lg-4 col-md-7 py-5 my-auto">
+        <div class="container border py-5 px-4 my-5 rounded shadow-lg">
+            <h1 class="text-center text-primary mb-0" id="welcome_text">Welcome</h1>
+            <hr />
+            <form id="loginForm" onsubmit="submitForm()" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="p-0 mb-1">
+                    <input type="email" name="email" placeholder="Email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" />
+                </div>
+                <div class="p-0 mb-1">
+                    <input type="password" name="password" placeholder="Password" class="form-control" id="exampleInputPassword1" />
+                </div>
+                <p class="text-right mr-3">
+                    <a href="{% url 'recover' %}">Recover Password</a>
+                </p>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success shadow-lg mr-1 px-3">
+            Log in
+          </button>
+                    <a href="{% url 'register_customer' %}" class="btn btn-primary shadow-lg ml-1 px-3">
+            Sign Up
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <div class="col-sm"></div>
+</div>
+
+
+
+<script type="text/javascript">
+    function submitForm() {
+        event.preventDefault();
+        var gotocart = "{{ cart }}";
+        var token = "{{ csrf_token }}";
+        var redirect_url = "{{redirect_url}}"
+        var local_cart = JSON.parse(localStorage.getItem('cart'));
+        $.ajax({
+            "headers": {
+                "X-CSRFToken": token
+            },
+            "url": '',
+            "method": "POST",
+            "data": JSON.stringify({
+                email: document.getElementById("exampleInputEmail1").value,
+                password: document.getElementById("exampleInputPassword1").value,
+                cart: local_cart,
+                redirect_url: '{{redirect_url}}'
+            }),
+            "processData": false,
+            "success": function(response) {
+                if (response.invalid) {
+                    console.log(response)
+                    alert('Invalid email or password!');
+                } else {
+                    console.log(response.url)
+                    if (redirect_url != 'None') {
+                        var url = response.url.slice(1, -1);
+                        location = url;
+                    } else {
+                        var url = response.url;
+                        location = url;
+                    }
+
+                }
+            }
+        });
+
+    }
+</script>
+
+{% endblock %}

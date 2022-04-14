@@ -1,0 +1,261 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Admin Wallet{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8"> {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <label>Apply Filter</label>
+                <select class="form-control" onChange="window.location.href=this.value">
+                    <option value="{% url 'admin_wallet' %}">Wallet</option>
+                    {% if is_owner %}
+                    <option value="{% url 'admin_owner_wallet' %}" selected>Owners</option>
+                    {% else %}
+                    <option value="{% url 'admin_owner_wallet' %}">Owners</option>
+                    {% endif %}
+                    {% if is_customer %}
+                    <option value="{% url 'admin_customer_wallet' %}" selected>Customers</option>
+                    {% else %}
+                    <option value="{% url 'admin_customer_wallet' %}">Customers</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="text-white">My wallet</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label>Apply Filter :</label>
+                        <input type='text' id='search' class='form-control'>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-primary">
+                        <h4 class="card-title ">All wallets</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="table-responsive">
+                                    <table class="table" id='walletTable'>
+                                        <thead class=" text-primary">
+                                            <tr>
+                                                <th scope='col'>
+                                                </th>
+                                                <th scope='col'>
+                                                    Type
+                                                </th>
+                                                <th scope='col'>
+                                                    Name
+                                                </th>
+                                                <th scope='col'>
+                                                    Wallet
+                                                </th>
+                                                <th scope='col'>
+                                                    Redeem
+                                                </th>
+                                                <th scope='col'>
+                                                    Status
+                                                </th>
+                                                <th scope='col'>
+                                                    Deactivate Amount
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for wallet in wallets %}
+                                            <tr>
+                                                <td>
+                                                    {% if wallet.customer %}
+                                                    <img height='35' src="{% static 'img/customers.png' %}">
+                                                    {% elif wallet.owner.is_vendor %}
+                                                    <img height='35' src="{% static 'img/owners1.png' %}">
+                                                    {% else %}
+                                                    <img height='35' src="{% static 'img/driver.png' %}">
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if wallet.customer %}
+                                                    Customer
+                                                    {% elif wallet.owner.is_vendor %}
+                                                    Vendor
+                                                    {% else %}
+                                                    Owner
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'admin_wallet_det' wallet_id=wallet.id %}">
+                                                    {% if wallet.customer %}
+                                                    {{wallet.customer.user.name}}
+                                                    {% else %}
+                                                    {{wallet.owner.user.name}}
+                                                    {% endif %}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    {% if wallet.balance < wallet.deactivate_amount %}
+                                                    <span style='color:red'><strong>{{wallet.balance}}</strong></span>
+                                                    {% else %}
+                                                    <span style='color:green'><strong>{{wallet.balance}}</strong></span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {{wallet.redeem_balance}}
+                                                </td>
+                                                <td>
+                                                    <form method="POST">
+                                                    {% csrf_token %}
+                                                        {% if wallet.is_active %}
+                                                        <span style='color:green'>Active</span>
+                                                        <button type="submit" name="deactivate" value="{{wallet.id}}" class='btn btn-sm btn-danger'>Deactivate</button>
+                                                        {% else %}
+                                                        <span style='color:red'>Deactivated</span>
+                                                        <button type="submit" name="activate" value="{{wallet.id}}" class='btn btn-sm btn-success'>Activate</button>
+                                                        {% endif %}
+                                                    </form>
+                                                </td>
+                                                <td>
+                                                    <form method="POST">
+                                                    {% csrf_token %}
+                                                        <div class='row'>
+                                                            <div class='col'>
+                                                                <input type='number' class='form-control' name='amount' value='{{wallet.deactivate_amount}}'>
+                                                            </div>
+                                                            <div class='col'>
+                                                                <button type='submit' name='deactivate_amount' value='{{wallet.id}}' class='btn btn-sm btn-primary'><i class='material-icons'>save</i></button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col text-center">
+                                <div style="display: inline;">
+                                    {% if wallets.has_other_pages %}
+                                    <ul class="pagination">
+                                        {% if wallets.has_previous %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ wallets.previous_page_number }}">&laquo;</a></li>
+                                        {% else %}
+                                        <li class="page-item disabled"><a class="page-link"><span>&laquo;</span></a></li>
+                                        {% endif %} {% for i in wallets.paginator.page_range %} {% if wallets.number == i %}
+                                        <li class="page-item active"><a class="page-link" style="background-color: #a84ab7 !important;;"><span class="text-white">{{ i }} </span></a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                                        {% endif %} {% endfor %} {% if wallets.has_next %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ wallets.next_page_number }}">&raquo;</a></li>
+                                        {% else %}
+                                        <li class="disabled page-item"><a class="page-link"><span>&raquo;</span></a></li>
+                                        {% endif %}
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
+{% block customjs %}
+<script>
+$(document).ready(function(){
+  $("#search").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#walletTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>
+{% endblock %}
+
+{% block sidebar %}
+    <ul class="nav">
+         
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_owners' %}">
+                <i class="material-icons">person</i>
+                <p>Owners</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_car_types' %}">
+                <i class="material-icons">local_taxi</i>
+                <p>Car Types</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_drivers' %}">
+                <i class="material-icons">assignment_ind</i>
+                <p>Drivers</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_cars' %}">
+                <i class="material-icons">directions_car</i>
+                <p>Cars</p>
+            </a>
+        </li>
+        <li class="nav-item ">
+            <a class="nav-link" href="{% url 'admin_customers' %}">
+                <i class="material-icons">people_alt</i>
+                <p>Customers</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_trips' %}">
+                <i class="material-icons">navigation</i>
+                <p>Trips</p>
+            </a>
+        </li>
+    </ul>
+    {% endblock %}

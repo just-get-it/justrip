@@ -1,0 +1,58 @@
+{% extends 'just_cabs_base.html' %} {% block title %}Justrip | Contact Us{% endblock %} {% block content %}
+
+<section id="page-title">
+
+    <div class="container clearfix">
+        <h2>JUSTCAB</h2>
+        <span>We provide Amazing Travel Solutions</span>
+
+        <br>
+        <b5>WELCOME OFFERS: <br> Get Rs.1000/- on download of JUSTCAB CUSTOMER APP.
+        </b5>
+        <br>
+        <b5>Get Upto Rs. 1000/- CASHBACK on every booking.</b5><br><br>
+
+        <b>Book Your Cab  ANYTIME*,  ANYWHERE* 
+            <!-- <img src="images/icons/call.png" alt="CALL" width="30" height="30"> -->
+            <i class="material-icons">phone</i> 
+            Call/
+            <!-- <img src="images/icons/message.png" alt="MESSAGE" width="30" height="30"> -->
+            <i class="material-icons">message</i> 
+            Message/
+            <!-- <img src="images/icons/whatsapp.png" alt="WHATSAPP" width="30" height="30"> -->
+            <i class="material-icons">chat_bubble</i> 
+            WhatsApp JUSTCAB-9619347993 / 8625889552 / 8861991781.
+            <p>Pay to : Google Play, Phone pay to 8861991781</p>
+        </b>
+        <br>
+        <span>Write some thing   
+            <b><i class="material-icons">alternate_email</i>   Email us : support@justgetit.in
+            </b>
+        </span>
+        <br><br>
+        <span>
+             
+            <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_G5M869M5eRhc2C"> </script> </form>
+            
+            <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_GCPON5lWPycDOy"> </script> </form>
+
+            <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_GCPV6QE5GuuiPG"> </script> </form>
+        </span>
+              
+        <!-- <ol class="breadcrumb">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Pages</a></li>
+            <li class="active">Services</li>
+        </ol> -->
+    </div>
+
+</section>
+
+{% endblock %}{% block customjs %}
+<script>
+    $(document).ready(function() {
+        $(".nav-item").removeClass("active");
+        $('#contact_us').addClass("active");
+    });
+</script>
+{% endblock %}

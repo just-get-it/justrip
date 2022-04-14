@@ -1,0 +1,279 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% block title %}Justrip | Owner Profile{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if profile.is_verified %}
+                <div class="alert alert-success">
+                    <span> Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Verification Pending</span>
+                </div>
+                {% endif %} {% if profile.is_active %}
+                <div class="alert alert-success">
+                    <span> Active </span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Deactivated</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header card-header-primary">
+                        {% if profile.is_verified %}
+                        <h4 class="card-title">{% if profile.is_owner %}Owner Profile{% else %}Vendor Profile{% endif %}</h4>
+                        <form method="POST">
+                            {% csrf_token %} {% if staff %} {% if profile.is_owner %}
+                            <label for='driver'>Driver:</label>
+                            <input type="radio" name="profile_type" value="driver" checked> {% else %}
+                            <label for='driver'>Driver:</label>
+                            <input type="radio" name="profile_type" value="driver">{% endif %} {% if profile.is_vendor %}
+                            <label for='vendor'>Vendor:</label>
+                            <input type="radio" name="profile_type" value="vendor" checked> {% else %}
+                            <label for='vendor'>Vendor:</label>
+                            <input type="radio" name="profile_type" value="vendor"> {% endif %}
+                            <button class="btn btn-danger" disabled>Un-Verify</button> {% else %}
+                            <button type="submit" value="true" class="btn btn-danger" name="unverify">Un-Verify</button> {% endif %} {% if profile.is_active %}
+                            <button type="submit" value="true" class="btn btn-danger" name="deactivate">Deactivate</button> {% else %}
+                            <button type="submit" value="true" class="btn btn-success" name="activate">Activate</button> {% endif %}
+                        </form>
+                        {% else %}
+                        <h4 class="card-title">{% if profile.is_owner %}Unverified Owner Profile{% else %}Unverfied Vendor Profile{% endif %}</h4>
+                        <form method="POST">
+                            {% csrf_token %}{% if profile.is_owner %}
+                            <label for='driver'>Driver:</label>
+                            <input type="radio" name="profile_type" value="driver" checked> {% else %}
+                            <label for='driver'>Driver:</label>
+                            <input type="radio" name="profile_type" value="driver">{% endif %} {% if profile.is_vendor %}
+                            <label for='vendor'>Vendor:</label>
+                            <input type="radio" name="profile_type" value="vendor" checked> {% else %}
+                            <label for='vendor'>Vendor:</label>
+                            <input type="radio" name="profile_type" value="vendor"> {% endif %}
+                            <button type="submit" value="true" class="btn btn-success" name="verify">Verify</button>{% if profile.is_active %}
+                            <button type="submit" value="true" class="btn btn-danger" name="deactivate">Deactivate</button> {% else %}
+                            <button type="submit" value="true" class="btn btn-success" name="activate">Activate</button> {% endif %}
+                        </form>
+                        {% endif %}
+
+                    </div>
+                    <div class="card-body">
+                        {% if staff %}
+                        <fieldset disabled>
+                            {% endif %}
+                            <form method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group bmd-form-group">
+                                            <label class="bmd-label-floating">Name</label>
+                                            <input type="text" class="form-control" name='name' value="{{details.name}}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group bmd-form-group">
+                                            <label class="bmd-label-floating">Email address</label>
+                                            <input type="email" class="form-control" value="{{details.email}}" disabled="">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group bmd-form-group">
+                                            <label class="bmd-label-floating">Phone No</label>
+                                            <input type="number" name='contact' class="form-control" maxlength="10" value="{{details.contact}}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group bmd-form-group">
+                                            <label class="bmd-label-floating">Bank Account Number</label> {% if profile.bank_account_no %}
+                                            <input type="number" name='bank_account_no' class="form-control" value="{{profile.bank_account_no}}" required> {% else %}
+                                            <input type="number" name='bank_account_no' class="form-control" required> {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group bmd-form-group">
+                                            <label class="bmd-label-floating">IFSC Code</label> {% if profile.ifsc_code %}
+                                            <input type="text" name='ifsc_code' class="form-control" value="{{profile.ifsc_code}}" required> {% else %}
+                                            <input type="text" name='ifsc_code' class="form-control" required> {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group bmd-form-group">
+                                            <label class="bmd-label-floating">Account Holder's Name</label> {% if profile.account_holders_name %}
+                                            <input type="text" name='account_holders_name' class="form-control" value="{{profile.account_holders_name}}" required>{% else %}
+                                            <input type="text" name='account_holders_name' class="form-control" required>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group bmd-form-group">
+                                            {% if profile.cheque_image %}
+                                            <label class="bmd-label-static">Canceled Cheque Image</label> <br>
+                                            <img id="cancelled_cheque_image" src="{{profile.cheque_image.url}}" height="250px">{% else %}
+                                            <label class="bmd-label-static">Example Canceled Cheque</label> <br>
+                                            <img id="cancelled_cheque_image" src="{% static 'img/cancelled_cheque.jpg' %}" height="250px">{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        {% if profile.cheque_image %}
+                                        <label class="bmd-label-static">Edit Cheque Image</label>{% else %}
+                                        <label class="bmd-label-static">Add Cheque Image</label>{% endif %}
+                                        <input type="file" name='cheque_image' onchange="ImgDisplay(this, 'cancelled_cheque_image');" class="form-control">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary pull-right" name='update_profile' value="True">Update Profile</button>
+                                <div class="clearfix"></div>
+                            </form>
+                            {% if staff %}
+                        </fieldset>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-profile">
+                    <div class="card-avatar">
+                        {% if profile.profile_picture %}
+                        <img id="profile_picture" class="img" src="{{profile.profile_picture.url}}"> {% else %}
+                        <img id="profile_picture" class="img" src="{% static 'img/profile_pic_default.png' %}"> {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-category">{{details.email}}</h6>
+                        <h4 class="card-title">{{details.name}}</h4>
+                        <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                            Change Picture
+                          </a>
+                        <div class="collapse" id="collapseExample">
+                            <div class="card card-body">
+                                {% if staff %}
+                                <fieldset disabled>
+                                    {% endif %}
+                                    <form method="POST" enctype="multipart/form-data">
+                                        {% csrf_token %} {% if profile.is_verified %}
+                                        <input type="file" name='profile_pic' class="form-control" onchange="ImgDisplay(this,'profile_picture');" disabled='disabled'>
+                                        <button type="submit" name='profile_pic_update' value="True" class="btn btn-primary" disabled='disabled'>Save</button>{% else %}
+                                        <input type="file" name='profile_pic' class="form-control" onchange="ImgDisplay(this,'profile_picture');">
+                                        <button type="submit" name='profile_pic_update' value="True" class="btn btn-primary">Save</button>{% endif %}
+                                    </form>
+                                    {% if staff %}
+                                </fieldset>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <h3>History:</h3>
+                {% for event in events %}
+                <div class="card text-white">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col text-left">
+                                <p>{{event.email}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <h5>{{event.text}}</h5>
+                            </div>
+                            <div class="col-4 text-right">
+                                <p>{{event.time}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <br>
+    </div>
+</div>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_unverified_trips' %}">
+            <i class="material-icons">navigation</i>
+            <p>Trips</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_customers' %}">
+            <i class="material-icons">people_alt</i>
+            <p>Customers</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'admin_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>Cars</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_owners' %}">
+            <i class="material-icons">person</i>
+            <p>Owners</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_car_types' %}">
+            <i class="material-icons">local_taxi</i>
+            <p>Car Types</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_charts' %}">
+            <i class="material-icons">assessment</i>
+            <p>Graphs</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

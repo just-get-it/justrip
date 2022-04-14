@@ -1,0 +1,192 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Owner Home{% endblock %} {% block customcss %}
+<link rel="stylesheet" href="{% static 'chosen/chosen.min.css' %}">
+<script type='text/javascript' src='http://www.bing.com/api/maps/mapcontrol?callback=GetMap' async defer></script>
+<script src="https://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0&s=1"></script> 
+
+<style>
+    .chosen-container {
+        width: 100% !important;
+        /* or any value that fits your needs */
+    }
+    
+    .chosen-container.chosen-container-multi .search-choice a {
+        background-color: green!important;
+        font-size: 14px!important;
+        color: white!important;
+        padding-left: 2px;
+        top: 6px!important;
+    }
+    
+    .chosen-choices {
+        background-image: unset!important;
+        background-color: #deeaee!important;
+        border-radius: 10px;
+    }
+    
+    .search-choice {
+        border-radius: 7px!important;
+    }
+</style>
+{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <form method="POST" action="/owner_request_location/">
+                {% csrf_token %}
+                <div id='searchBoxContainer'>
+                    <h4 class="text-white">Enter your current location</h4>
+                    <input type='text' id='searchBox' placeholder='Search for location' />
+                    <input type='text' id="coords" name = "curr_loc" id='searchBox' style='display:none'/>
+                </div>
+                <div id="myMap" style="position:relative;width:500px;height:500px;"></div>
+                <div id='searchBoxContainer1' class='mt-5'>
+                    <h4 class="text-white">Enter your Home location</h4>
+                    <input type='text' id='searchBox1' placeholder='Search for location' />
+                    <input type='text' id="coords1" name = "home_loc" id='searchBox1' style='display:none'/>
+                </div>
+                <div id="myMap1" style="position:relative;width:500px;height:500px;"></div>
+                <div class = "text-center">
+                    <button class="btn btn-primary" type = "submit">Request Trip</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block customjs %}
+<script src="{% static 'chosen/chosen.jquery.min.js' %}"></script>
+<script>
+    $(document).ready(function() {
+        $(".chosen-select").chosen()
+        $(".search-choice").css("background", "#4EA753");
+        $("#dash").addClass("active");
+    });
+    $(document).click(function() {
+        $(".search-choice").css({
+            "background": "#4EA753",
+            "padding": "5px 20px 5px 5px"
+        });
+        $(".search-choice span").css("font-size", "16px");
+        $(".search-choice-close").text("X")
+    });
+</script>
+
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    {% comment %}   {% endcomment %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_driver_details' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Diver Profile</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'owner_car' %}">
+            <i class="material-icons">directions_car</i>
+            <p>My Car</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_request_trip' %}">
+            <i class="material-icons">my_location</i>
+            <p>Request Trip</p>
+        </a>
+    </li>
+</ul>
+
+<script type='text/javascript'>
+    var map;
+
+    function GetMap() {
+        map = new Microsoft.Maps.Map('#myMap', {});
+
+        Microsoft.Maps.loadModule('Microsoft.Maps.AutoSuggest', function () {
+            var manager = new Microsoft.Maps.AutosuggestManager({ map: map });
+            manager.attachAutosuggest('#searchBox', '#searchBoxContainer', suggestionSelected);
+        });
+    }
+
+    function suggestionSelected(result) {
+        //Remove previously selected suggestions from the map.
+        map.entities.clear();
+
+        //Show the suggestion as a pushpin and center map over it.
+        var pin = new Microsoft.Maps.Pushpin(result.location);
+        map.entities.push(pin);
+        $('#coords').val(`${result.location.latitude},${result.location.longitude}`)
+        map.setView({ bounds: result.bestView });
+        console.log(`${result.location.longitude},${result.location.latitude}`)
+    }
+
+    function GetMap1() {
+        map = new Microsoft.Maps.Map('#myMap1', {});
+
+        Microsoft.Maps.loadModule('Microsoft.Maps.AutoSuggest', function () {
+            var manager = new Microsoft.Maps.AutosuggestManager({ map: map });
+            manager.attachAutosuggest('#searchBox1', '#searchBoxContainer1', suggestionSelected1);
+        });
+    }
+
+    function suggestionSelected1(result) {
+        //Remove previously selected suggestions from the map.
+        map.entities.clear();
+
+        //Show the suggestion as a pushpin and center map over it.
+        var pin = new Microsoft.Maps.Pushpin(result.location);
+        map.entities.push(pin);
+        $('#coords1').val(`${result.location.latitude},${result.location.longitude}`)
+        map.setView({ bounds: result.bestView });
+        console.log(`${result.location.longitude},${result.location.latitude}`)
+    }
+    </script>
+    <script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?callback=GetMap&key=AgB7hiqOcS-Xw-jNEegI1kq-LPI1BJPDRi5mlCfaLrs_0tBrOvsTTBpbJ4eSrEqo' async defer></script>
+    <script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?callback=GetMap1&key=AgB7hiqOcS-Xw-jNEegI1kq-LPI1BJPDRi5mlCfaLrs_0tBrOvsTTBpbJ4eSrEqo' async defer></script>
+
+{% endblock %}

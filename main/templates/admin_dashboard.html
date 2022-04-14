@@ -1,0 +1,215 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Admin Dashboard{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <h2>Admin Panel</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xl-4 col-lg-12">
+                <a href="{% url 'admin_owners' %}">
+                    <div class="card card-chart">
+                        <div class="card-header card-header-primary text-center">
+                            <img src="{% static 'img/owners1.png' %}" height="150">
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title"><a href="#">Owners</a> </h4>
+                            <p class="card-category">
+                                <span class="text-success">{{owners|length}}</span> Trips</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="stats">
+                                <i class="material-icons">access_time</i> updated 4 minutes ago
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-4 col-lg-12">
+                <div class="card card-chart">
+                    <a href="{% url 'admin_car_types' %}">
+                        <div class="card-header card-header-danger text-center" style="height: 180px;">
+                            <img src="{% static 'img/car_types1.png' %}" height="90" style="margin-top: 20px;">
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title"><a href="#">Car Types </a></h4>
+                            <p class="card-category">
+                                <span class="text-success"> {{car_types|length}} </span> Cars</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="stats">
+                                <i class="material-icons">access_time</i> updated 4 minutes ago
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-xl-4 col-lg-12">
+                <div class="card card-chart">
+                    <a href="{% url 'admin_drivers' %}">
+                        <div class="card-header card-header-info text-center">
+                            <img src="{% static 'img/driver.png' %}" height="150">
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title"><a href="#">Drivers</a> </h4>
+                            <p class="card-category">
+                                <span class="text-success">{{drivers|length}}</span> Drivers</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="stats">
+                                <i class="material-icons">access_time</i> updated 4 minutes ago
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-xl-4 col-lg-12">
+                <div class="card card-chart">
+                    <a href="{% url 'admin_cars' %}">
+                        <div class="card-header card-header-success text-center">
+                            <img src="{% static 'img/taxi.png' %}" height="150">
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title"><a href="#">Cars </a></h4>
+                            <p class="card-category">
+                                <span class="text-success"> {{cars|length}} </span> Cars</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="stats">
+                                <i class="material-icons">access_time</i> updated 4 minutes ago
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-xl-4 col-lg-12">
+                <div class="card card-chart">
+                    <a href="{% url 'admin_customers' %}">
+                        <div class="card-header card-header-warning text-center">
+                            <img src="{% static 'img/customers.png' %}" height="150">
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title"><a href="#">Customers</a> </h4>
+                            <p class="card-category">
+                                <span class="text-success">{{customers|length}}</span> Trips</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="stats">
+                                <i class="material-icons">access_time</i> updated 4 minutes ago
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-xl-4 col-lg-12">
+                <div class="card card-chart">
+                    <a href="{% url 'admin_trips' %}">
+                        <div class="card-header card-header-primary text-center">
+                            <img src="{% static 'img/route1.png' %}" height="150">
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title"><a href="#">Trips</a> </h4>
+                            <p class="card-category">
+                                <span class="text-success">{{trips|length}}</span> Trips</p>
+                        </div>
+                        <div class="card-footer">
+                            <div class="stats">
+                                <i class="material-icons">access_time</i> updated 4 minutes ago
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block customjs %}
+<script>
+$(document).ready(function() {
+            $("#dash").addClass("active");
+        });
+</script>
+{% endblock %}
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_unverified_trips' %}">
+            <i class="material-icons">navigation</i>
+            <p>Trips</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_customers' %}">
+            <i class="material-icons">people_alt</i>
+            <p>Customers</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'admin_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>Cars</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_owners' %}">
+            <i class="material-icons">person</i>
+            <p>Owners</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_car_types' %}">
+            <i class="material-icons">local_taxi</i>
+            <p>Car Types</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_charts' %}">
+            <i class="material-icons">assessment</i>
+            <p>Graphs</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

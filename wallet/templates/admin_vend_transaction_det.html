@@ -1,0 +1,261 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Admin Vendor Transaction Details{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8"> {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <h3 class="text-white">{{wallet}} (Vendor Wallet)</h3>
+                <!-- <i class="material-icons">payments</i>
+                <i class="material-icons">account_balance</i>  -->
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header card-header-primary">
+                        <div class="row">
+                            <div class="col text-left">
+                                <h3 class="card-title ">Transactions ID: {{transaction.id}}</h3>
+                            </div>
+                            <div class="col text-right">
+                                <h3 class="card-title"><strong> {% if transaction.debit %}<span style="color: #ff6262;">
+                                -₹{{transaction.amount}}</span>{% endif %}{% if transaction.credit %}<span style="color: #5aff5a;">
+                                    +₹{{transaction.amount}}</span>{% endif %}</strong></h3>
+                            </div>
+                        </div>
+                        <p class="card-category">Transaction Time: {{transaction.time}}</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md">
+                                <label>Details:</label>
+                                <div class="table-responsive">
+                                    <table class="table border border-dark rounded">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    Transaction:
+                                                </td>
+                                                <td>
+                                                    {% if transaction.credit %} Credit{% endif %} {% if transaction.debit %} Debit{% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    Payment Method:
+                                                </td>
+                                                <td>
+                                                    {% if transaction.vendor_to_company %} Online(RazorPay) {% endif %} {% if transaction.customer_to_vendor %} In hand cash (from customer) {% endif %}
+                                                    {% if transaction.company_to_vendor %}
+                                                        Cashback 
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    Status:
+                                                </td>
+                                                <td>
+{% if transaction.status == "Failed" %}
+                                                    <span style='color:red;'>{{transaction.status}}</span>
+                                                {% else %}
+                                                    <span>{{transaction.status}}</span>
+                                                {% endif %}
+</td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    Amount:
+                                                </td>
+                                                <td>
+                                                    {{transaction.amount}}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    {% if transaction.debit %} From: {% endif %} {% if transaction.credit %} To: {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if transaction.is_redeemed %} Redeem Wallet {% else %} Wallet {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    {% if transaction.is_redeemed %} Redeem Wallet Balance: {% else %} Wallet Balance: {% endif %}
+
+                                                </td>
+                                                <td>
+                                                    {% if transaction.is_redeemed %} {{transaction.running_balance_redeem}} {% else %} {{transaction.running_balance}} {% endif %}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            {% if transaction.paymentdetail %}
+                            <div class="col-md-7">
+                                <div class="row">
+                                    <div class="col">
+                                        <label>Trip Details:</label>
+                                    </div>
+                                    <div class="col text-right">
+                                        <a class="sm" href="{% url 'admin_trip_view' trip_id=transaction.paymentdetail.trip.id %}">more</a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <span class="material-icons">my_location</span>{{transaction.paymentdetail.trip.pickup_address}}
+                                    </div>
+                                    <div class="col-md-12">
+                                        <span class="material-icons">place</span>{{transaction.paymentdetail.trip.drop_address}}
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label>Total Payable Amount:</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        ₹{{transaction.paymentdetail.trip.bill_amount}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label>Distance:</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <i class="material-icons">multiple_stop</i>{{transaction.paymentdetail.trip.distance}} Km
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label>Date:</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <i class="material-icons">event</i>{{transaction.paymentdetail.trip.pickup_date}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label>Time:</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <i class="material-icons">alarm_on</i>{{transaction.paymentdetail.trip.pickup_time}}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card card-stats">
+                            <div class="card-header card-header-success card-header-icon">
+                                <div class="card-icon">
+                                    <i class="material-icons">account_balance_wallet</i>
+                                </div>
+                                <!-- <p class="card-category">Wallet Balance</p> -->
+                                <p class="card-category">Wallet Balance</p>
+                                <h3 class="card-title" style="color: green;">₹{{transaction.wallet.balance}}</h3>
+                                <!-- <h3 class="card-title">Wallet Balance</h3>
+                                <h4><span style="color: green;">₹34,245</span></h4> -->
+                            </div>
+                            <hr> {% comment %}
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col text-left">
+                                        <h4>Redeem Balance:</h4>
+                                    </div>
+                                    <div class="col-4 text-right">
+                                        <h3 class="card-title"><span style="color: green;">₹1,000</span></h4>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endcomment %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block sidebar %}
+    <ul class="nav">
+         
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_owners' %}">
+                <i class="material-icons">person</i>
+                <p>Owners</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_car_types' %}">
+                <i class="material-icons">local_taxi</i>
+                <p>Car Types</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_drivers' %}">
+                <i class="material-icons">assignment_ind</i>
+                <p>Drivers</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_cars' %}">
+                <i class="material-icons">directions_car</i>
+                <p>Cars</p>
+            </a>
+        </li>
+        <li class="nav-item ">
+            <a class="nav-link" href="{% url 'admin_customers' %}">
+                <i class="material-icons">people_alt</i>
+                <p>Customers</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_trips' %}">
+                <i class="material-icons">navigation</i>
+                <p>Trips</p>
+            </a>
+        </li>
+    </ul>
+    {% endblock %}

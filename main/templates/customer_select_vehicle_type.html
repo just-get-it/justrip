@@ -1,0 +1,146 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Customer Select Car{% endblock %} {% block customcss %}
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+<style>
+    .whitetext {
+        color: white;
+    }
+</style>
+{% load mapbox_location_field_tags %} {% location_field_includes %} {% include_jquery %} {% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if profile.is_verified %}
+                <div class="alert alert-success">
+                    <span> Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Verification Pending</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <form method="GET">
+                        <div class="card-header card-header-primary">
+                            <div class="row">
+                                <div class="col">
+                                    
+                                    <h4 class="card-title"> Vehicle Group: {{selected.vehicle_group}}</h4>
+                                   
+                                    <p class="card-category"><span class="material-icons">my_location</span> {{pickup_address}} <br> <span class="material-icons">place</span> {{drop_address}}</p>
+                                </div>
+                            </div>
+                             <div class="row">
+                                <div class="col-6">
+                                    <label class="whitetext">Select Date:</label> <input type="date" class="form-control" name="pickup_date" value={{selected.pickup_date}} required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="whitetext">Select Time:</label> <input type="time" class="form-control" name="pickup_time" value={{selected.pickup_time}} required>
+                                    <input type="hidden" name="pickup_location" value="{{selected.pickup_location}}">
+                                    <input type="hidden" name="drop_location" value="{{selected.drop_location}}">
+                                    <input type="hidden" name="days" value="{{selected.days}}">
+                                    <input type="hidden" name="trip_type" value="{{selected.trip_type}}">
+                                    <input type="hidden" name="trip_way" value="{{selected.trip_way}}">
+                                    <input type="hidden" name="trip_variant" value="{{selected.trip_variant}}">
+                                    <input type="hidden" name="vehicle_group" value="{{selected.vehicle_group}}">
+                                    <input  type="hidden" name="trip_perimeter" value="{{selected.trip_perimeter}}">
+
+                                </div>
+                            </div>
+                        </div>
+                       
+                                
+                            {% for data in vehicle_types_data %}
+                            
+                         
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-7 ">
+                                            <img height="200" width="100%" src='{{data.vehicle_type_info.picture.url}}'>
+                                            <h6 class="whitetext text-center mt-2">{{data.vehicle_type_info.pk}}</h6>
+
+                                            <h6 class="whitetext text-center ">{{data.vehicle_type_info.description}}</h6>
+                                        </div> 
+                                        
+                                        <div class="col-5 text-right">
+                                            <h3 class="whitetext">Rs.{{data.charges_list.Final_Trip_Cost|floatformat:2}}</h3>
+                                            <h4 class="">Min. Distance: {{data.charges_list.minimum_km}} KMs</h4>
+                                            <h4 class="">Min. Charge: Rs.{{data.charges_list.base_cost|floatformat:2}}</h4>
+
+                                            <p class="small">Rs.{{data.charges_list.rate_per_km}} per km after minimum distance</p>
+                                            <button type="submit" class="btn btn-primary" value="{{data.vehicle_type_info.pk}}" name="vehicle_type">Select</button>
+                                        </div>
+                             
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                                    Not available
+                            {% endfor %}
+                            
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    {% endblock %}{% block sidebar %}
+    <ul class="nav">
+        <li class="nav-item active">
+            <a class="nav-link" href="{% url 'customer_create_trip' %}">
+                <i class="material-icons">alt_route</i>
+                <p>Create Trip</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'customer_details' %}">
+                <i class="material-icons">account_box</i>
+                <p>My Profile</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'customer_active_bookings' %}">
+                <i class="material-icons">navigation</i>
+                <p>My Trips</p>
+            </a>
+        </li>
+    </ul>
+    {% endblock %}

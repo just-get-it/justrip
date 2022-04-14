@@ -1,0 +1,181 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Customer Create Trip{% endblock %} {% block customcss %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Locate the user</title>
+        <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+        <link href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css" rel="stylesheet">
+        <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
+       
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="http://malsup.github.com/jquery.form.js"></script>
+        <meta charset="UTF-8">
+        <title>Bing Maps</title>
+        <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
+        <script src="https://unpkg.com/elm-pep"></script>
+        <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+        <script src="https://cdn.polyfill.io/v3/polyfill.min.js?features=fetch,requestAnimationFrame,Element.prototype.classList,URL,TextDecoder,Number.isInteger"></script>
+        <!-- <script src="{% static 'openlayer.js'%}"></script> -->
+        <script src="https://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0&s=1"></script>
+        <style>
+      
+        </style>
+
+
+    </head>
+    <body>
+
+        <div id="map" style='width: 800px; position: absolute; right:100px'></div>
+   
+    <script type="text/javascript">
+        var trip_id = '{{trip_id}}'
+        console.log(trip_id)
+        window.onload = function(e) {
+            // e.preventDefault();
+            var container = document.getElementById('map'),
+                resize = function () { container.style.height = '500px'; };
+            resize();
+            
+            var map = new Microsoft.Maps.Map(container, {
+                credentials: 'AgB7hiqOcS-Xw-jNEegI1kq-LPI1BJPDRi5mlCfaLrs_0tBrOvsTTBpbJ4eSrEqo',
+                center:new  Microsoft.Maps.Location(47.592, -122.323),
+                mapTypeId: Microsoft.Maps.MapTypeId.road,
+                zoom: 18
+                
+            });
+            fetch(
+                'https://justcab.justgetit.in/get_pickup_drop_trip/' + trip_id +'/' ,    
+                {
+                    headers: {      
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }
+            ).then((response)=>{
+                if (response.status === 200){
+                    var res = response.json()
+                    res.then(result=>{
+                        var pickup = result['pickup_coords']; ;
+                        var drop = result['drop_coords'];
+                        Microsoft.Maps.loadModule('Microsoft.Maps.Directions', function () {
+                            var directionsManager = new Microsoft.Maps.Directions.DirectionsManager(map);
+                            directionsManager.setRequestOptions({ routeMode: Microsoft.Maps.Directions.RouteMode.driving });
+                            var waypoint1 = new Microsoft.Maps.Directions.Waypoint({ location: new Microsoft.Maps.Location(pickup[1], pickup[0]) });
+                            var waypoint2 = new Microsoft.Maps.Directions.Waypoint({ location: new Microsoft.Maps.Location(drop[1], drop[0]) });
+                            directionsManager.addWaypoint(waypoint1);
+                            directionsManager.addWaypoint(waypoint2);
+                            directionsManager.calculateDirections();
+                        });
+                    })
+                }
+            })
+            function update_location() {
+                get_live_location_coords(map);
+                // console.log("here")
+            }
+        setInterval(update_location,30000)
+
+    };
+
+        function get_live_location_coords(map){
+            fetch(
+                'https://justcab.justgetit.in/get_live_location_coords/' + trip_id +'/' ,    
+                {
+                    headers: {      
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }
+            ).then((response)=>{
+                if (response.status === 200){
+                    var res = response.json()
+                    // console.log(res)
+                    res.then(result=>{
+                        // console.log(result)
+                        var car = result['car_coords']; ;
+                        var customer = result['customer_coords'];
+                        var driver = result['driver_coords'];
+                        console.log(car, driver, customer)
+                        var center = map.getCenter();
+                        
+                        var loc = new Microsoft.Maps.Location(customer[1],customer[0]);
+                        var pin = new Microsoft.Maps.Pushpin(loc, {text: 'Cust'}); 
+                        map.entities.push(pin);
+                        
+                        var loc = new Microsoft.Maps.Location(driver[1],driver[0]);
+                        var pin = new Microsoft.Maps.Pushpin(loc, {text: 'Driver'}); 
+                        map.entities.push(pin);
+                        
+                        var loc = new Microsoft.Maps.Location(car[1],car[0]);
+                        var pin = new Microsoft.Maps.Pushpin(loc, {text: 'car'}); 
+                        map.entities.push(pin);
+
+                        // Center the map on the location
+                        map.setView({center: loc, zoom: 18});
+
+                        //Add the pushpin to the map
+                        map.entities.push(pin);
+                        window.onresize = function() {
+                            resize()
+                        };
+                    })
+                }
+            }).catch((error)=>{
+                console.log(error)
+            });
+        }
+
+    </script>
+       
+    </body>
+</html>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_unverified_trips' %}">
+            <i class="material-icons">navigation</i>
+            <p>Trips</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_customers' %}">
+            <i class="material-icons">people_alt</i>
+            <p>Customers</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'admin_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>Cars</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_owners' %}">
+            <i class="material-icons">person</i>
+            <p>Owners</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_car_types' %}">
+            <i class="material-icons">local_taxi</i>
+            <p>Car Types</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_charts' %}">
+            <i class="material-icons">assessment</i>
+            <p>Graphs</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}
+

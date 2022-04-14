@@ -1,0 +1,581 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Customer Trip Payment{% endblock %} {% block customcss %}
+<style>
+    .ic-m {
+        font-size: medium!important;
+    }
+</style>
+{% load mapbox_location_field_tags %} {% location_field_includes %} {% include_jquery %} {% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if trip.is_canceled %}
+                <div class="alert alert-warning">
+                    <span> Cancelled Trip</span>
+                </div>
+                {% elif trip.is_verified %}
+                <div class="alert alert-success">
+                    <span> Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Verification Pending</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header card-header-primary">
+                            <div class="row">
+                                <div class="col text-left">
+                                    <h3 class="card-title">{% if trip.round_trip %} Round Trip {% else %} One Way Trip {% endif %} Id: {{trip.trip_no}} </h3>
+                                </div>
+                                <div class="col text-right">
+                                    <h3 class="card-title">Rs.{{trip.bill_amount}} </h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div id="car_data">
+                                                    <div class="row">
+                                                        <div class="col-md">
+                                                            <h6>{{trip.car_type.name}} {{trip.car_type.description}}</h6>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col text-center">
+                                                            <img src="{{trip.car_type.picture.url}}" height="130">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <h6>Pickup Date:</h6>
+                                                        <h5>
+                                                            <div id="date_display">
+                                                                <i class="material-icons ic-m">event</i>{{trip.pickup_date}}
+                                                            </div>
+                                                        </h5>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <h6>Pickup Time:</h6>
+                                                        <h4>
+                                                            <div id="time_display">
+                                                                <i class="material-icons ic-m">alarm_on</i>{{trip.pickup_time}} 
+                                                            </div>
+                                                        </h4>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <h6>Distance:</h6>
+                                                        <h4><i class="material-icons ic-m">multiple_stop</i>{{trip.distance}} Km</h4>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <h5><span class="material-icons ic-m">my_location</span> {{trip.pickup_address}}</h5>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <h5><span class="material-icons ic-m">place</span> {{trip.drop_address}}</h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        {% comment %} <div class="col-md-12">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead class=" text-primary">
+                                                        <tr>
+                                                            <th colspan="2">
+                                                                Bill Summary
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>
+                                                                Fare :
+                                                            </td>
+                                                            <td class="text-primary text-left">
+                                                                <strong style='color: green'>Rs.{{trip.fare}}</strong>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                GST 5% :
+                                                            </td>
+                                                            <td class="text-primary text-left">
+                                                                <strong style="color: green;">{{trip.tax}}</strong>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                Amount
+                                                            </td>
+                                                            <td class="text-primary text-left">
+                                                                <strong style="color: green;"> Rs.{{trip.bill_amount}}</strong>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div> {% endcomment %}
+                                        <div class="col-md-12 p-2">
+                            <hr style="border-top : 2px dotted rgb(139, 146, 169)">
+                            <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-white text-center">
+                                    <h4>Bill Summary:</h4>
+                                </div>
+                            </div>
+                            <hr style="border-top : 2px dotted rgb(139, 146, 169)">
+                            {% if trip.day_charges %}
+                            <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-left">
+                                    <h5>Min Amount X Days:</h5>
+                                </div>
+                                <div class="col text-right text-white">
+                                    <h5>{{trip.car_type.local_round_min_charge}} X {{trip.days}} = Rs.{{trip.day_charges}}/-</h5>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-left">
+                                    <h5>Min Amount :</h5>
+                                </div>
+                                <div class="col text-right text-white">
+                                    {% if trip_type == 'round' %}
+                                    <h5>Rs.{{trip.car_type.local_round_min_charge}}/-</h5> {% else %}
+                                    <h5>Rs.{{trip.car_type.local_oneway_min_charge}}/-</h5> {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-left">
+                                    {% if trip_type == 'round' %}
+                                    <h5>Extra Rs.{{trip.car_type.local_round_rate_per_km}}/Km</h5> {% else %}
+                                    <h5>Extra Rs.{{trip.car_type.local_oneway_rate_per_km}}/ Km</h5> {% endif %}
+                                </div>
+                                <div class="col text-right text-white">
+                                    <h5>Rs.{{trip.extra_dist_charges}}/-</h5>
+                                </div>
+                            </div>
+                            {% if trip_type == 'round' %}
+                            <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-left">
+                                    <h5> Driver Allowance :</h5>
+                                </div>
+                                <div class="col text-right text-white">
+                                    <h5>Rs.{{trip.total_driver_allowance}}/-</h5>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-left">
+                                    <h5>Redeem Wallet :</h5>
+                                </div>
+                                <div class="col text-right text-white">
+                                    <h5 style='color:green;'>- Rs.{{trip.car_type.redeem_wallet_amount}}/-</h5>
+                                </div>
+                            </div>
+                            <hr style="border-top : 2px dotted rgb(139, 146, 169)">
+                            <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-left">
+                                    <h5> Gross Total :</h5>
+                                </div>
+                                <div class="col text-right text-white">
+                                    <h5>Rs.{{trip.fare}}/-</h5>
+                                </div>
+                            </div>
+                            <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-left">
+                                    <h5> GST {{trip.tax_percent}}% :</h5>
+                                </div>
+                                <div class="col text-right text-white">
+                                    <h5>Rs.{{trip.tax}}/-</h5>
+                                </div>
+                            </div>
+                            <hr style="border-top : 2px dotted rgb(139, 146, 169)">
+                            <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-left">
+                                    <h5> Total Balance :</h5>
+                                </div>
+                                <div class="col text-right text-white">
+                                    <h5>Rs.{{trip.bill_amount}}/-</h5>
+                                </div>
+                            </div>
+                            <!-- <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-left">
+                                    <h5> Advanced Paid :</h5>
+                                </div>
+                                <div class="col text-right text-white">
+                                    <h5>Rs.[[1000]]/-</h5>
+                                </div>
+                            </div> -->
+                            <hr style="border-top : 2px dotted rgb(139, 146, 169)">
+                            <div class="row pl-5 pr-5 pt-2 pb-2">
+                                <div class="col text-left">
+                                    <h5> Amount to be paid :</h5>
+                                </div>
+                                <div class="col text-right text-white">
+                                    <h5>Rs.{{trip.bill_amount}}/-</h5>
+                                </div>
+                            </div>
+                            <hr style="border-top : 2px dotted rgb(139, 146, 169)">
+                        </div>
+                                        <div class="col-md-12">
+                                            <div class="row text-center">
+                                                <div class="col text-center">
+                                                    <h5 class="text-white">Travellers information:</h5>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <label>Name</label><br>{{trip.traveller.first.name}}
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label>Phone</label><br><a href="tel:{{trip.traveller.first.phone}}">{{trip.traveller.first.phone}}</a>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label>Email</label><br>{{trip.traveller.first.email}}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <label>Traveller Address</label><br>{{trip.traveller.first.address}}
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label>No of bags: </label><br>{{trip.traveller.first.no_of_bags}}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <label>No of Travellers</label><br>{{trip.traveller.first.no_of_travellers}}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label>Carrier Required?</label><br>{% if trip.traveller.first.carrier_required %}Yes{% else %}No{% endif %}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label>Special Instructions</label><br>{{trip.traveller.first.special_instructions}}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md text-center">
+                                                    <form method="POST">
+                                                        {% csrf_token %}
+                                                        <script src="https://checkout.razorpay.com/v1/checkout.js" data-key="rzp_live_048zfpCdwS3iFX" data-amount="{% widthratio order.total 1 100 %}" data-currency="INR" data-buttontext="Make Payement" data-name="JUSTCAB" data-description="{% if type == 'trip_full_payment' %}Trip Complete Payment{% elif type == 'trip_partial_payment' %}Trip 30% Advance Payment{% endif %}"
+                                                            data-image="{% static 'img/logo.png' %}" data-prefill.name="{{ profile.user.name }}" data-prefill.email="{{ profile.user.email }}" data-prefill.contact="{{ profile.user.contact }}"
+                                                            data-order_id="{{razorpay_od_id}}" data-theme.color="#8b35a0"></script>
+                                                        {% if type == 'trip_partial_payment' %}
+                                                        <input type="hidden" custom="Hidden Element" name="payment_type" value='trip_partial_payment'>
+                                                        {% elif type == 'trip_full_payment' %}
+                                                        <input type="hidden" custom="Hidden Element" name="payment_type" value='trip_full_payment'>
+                                                        {% endif %}
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% comment %} <div class="col-md-12">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="row">
+                                                        <div class="col text-center">
+                                                            <h5 class="text-white">Driver Information:</h5>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        {% if trip.driver_is_visible %}
+                                                        <div class="col-md">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <img src="{{trip.driver.picture.url}}" height="100">
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="row">
+                                                                        <div class="col-md-12">
+                                                                            Name: {{trip.driver.name}}
+                                                                        </div>
+                                                                        <div class="col-md-12">
+                                                                            Phone:<a href="tel:{{trip.driver.phone}}"> {{trip.driver.phone}}</a>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {% else %}
+                                                        <div class="col-md">
+                                                            No driver assigned at the moment
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="row">
+                                                        <div class="col-md text-center">
+                                                            <h5 class="text-white">Car Information: </h5>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        {% if trip.car %}
+                                                        <div class="col text-center">
+                                                            <a href="{% url 'admin_car_edit' car_id=trip.car.id %}">
+                                                                <h5>{{trip.car.company.name}} {{trip.car.name}}</h5>
+                                                                <h5>{{trip.car.licence_plate_no}}</h5>
+                                                            </a>
+                                                        </div>
+                                                        {% else %}
+                                                        <div class="col">
+                                                            No car assigned at the moment
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> {% endcomment %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <!-- <div class="card-header card-header-primary">
+                        <div class="row">
+                            <div class="col">
+                                <h4 class='card-title'>Trip Benifits</h4>
+                            </div>
+                        </div>
+                    </div> -->
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card-body">
+                                        {% if trip.round_trip %}
+                                        <h4 class='text-white'>Round trip Benifits</h4>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h1><i style="font-size:32px" class="material-icons">local_see</i></h1>
+                                            </div>
+                                            <div class="col-md">
+                                                <h6 class="text-white">Convenient sightseeing</h6>
+                                                Comfortable cabs for great vacation experiences
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h1><i style="font-size:32px" class="material-icons">local_taxi</i></h1>
+                                            </div>
+                                            <div class="col-md">
+                                                <h6 class="text-white">Cab stays with you</h6>
+                                                Take all the time you need, our driver will wait!
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h1><i style="font-size:32px" class="material-icons">multiple_stop</i></h1>
+                                            </div>
+                                            <div class="col-md">
+                                                <h6 class="text-white">Multiple stops</h6>
+                                                One ride for any number of pick-ups and drops
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <h3 class='text-white'>Oneway trip benifits</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h1><i style="font-size:32px" class="material-icons">360</i></h1>
+                                            </div>
+                                            <div class="col-md">
+                                                <h6 class="text-white">One Way Fares</h6>
+                                                Special one-way fares to just get dropped off to your destination
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h1><i style="font-size:32px" class="material-icons">how_to_reg</i></h1>
+                                            </div>
+                                            <div class="col-md">
+                                                <h6 class="text-white">Highly-rated drivers</h6>
+                                                Experienced and polite drivers with well-serviced, comfortable cabs
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h1><i style="font-size:32px" class="material-icons">receipt_long</i></h1>
+                                            </div>
+                                            <div class="col-md">
+                                                <h6 class="text-white">All inclusive pricing</h6>
+                                                Prices inclusive of GST, state taxes and tolls on majority of the routes
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card-body">
+                                        {% if trip.round_trip %}
+                                        <div class="row">
+                                            <div class="col-2">
+                                                <a onclick="show_inclusions()" class="btn btn-info btn-sm">Inclusions</a>
+                                            </div>
+                                            <div class="col-2">
+                                                <a onclick="show_exclusions()" class="btn btn-info btn-sm">Exclusions</a>
+                                            </div>
+                                        </div>
+                                        <div id="inclusions">
+                                            <h3>Inclusions</h3>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    {{trip.distance}} Kms till {{trip.drop_time}}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    Driver Allowance
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="exclusions" style="display: none;">
+                                            <h3>Exclusions</h3>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    Night charges(11 PM to 6 AM): ₹ 250
+                                                </div>
+                                                <div class="col-md-6">
+                                                    Toll Charges: As applicable
+                                                </div>
+                                                <div class="col-md-6">
+                                                    State Tax: As applicable
+                                                </div>
+                                                <div class="col-md-6">
+                                                    ₹ {{trip.car_type.local_round_rate_per_km}}/Km fare beyond {{trip.distance}} Kms
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <a onclick="show_inclusions()" class="btn btn-info">Inclusions</a>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <a onclick="show_exclusions()" class="btn btn-info">Exclusions</a>
+                                            </div>
+                                        </div>
+                                        <div id="inclusions">
+                                            <h3>Inclusions</h3>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    Toll Charges
+                                                </div>
+                                                <div class="col-md-6">
+                                                    {{trip.distance}} Kms
+                                                </div>
+                                                <div class="col-md-6">
+                                                    Driver Allowance
+                                                </div>
+                                                <div class="col-md-6">
+                                                    Only One Pickup and Drop
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="exclusions" style="display: none;">
+                                            <h3>Exclusions</h3>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    Night charges(11 PM to 6 AM): ₹ 250
+                                                </div>
+                                                <div class="col-md-6">
+                                                    Waiting Charges: After 45 mins, ₹ 2.0/min
+                                                </div>
+                                                <div class="col-md-6">
+                                                    ₹ {{trip.car_type.local_oneway_rate_per_km}}/Km fare beyond {{trip.distance}} Kms
+                                                </div>
+                                            </div>
+                                        </div> {% endif %} </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+    </div>
+    {% endblock %}
+    {% block sidebar %}
+    <ul class="nav">
+        
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'customer_create_trip' %}">
+                <i class="material-icons">alt_route</i>
+                <p>Create Trip</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'customer_details' %}">
+                <i class="material-icons">account_box</i>
+                <p>My Profile</p>
+            </a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="{% url 'customer_active_bookings' %}">
+                <i class="material-icons">navigation</i>
+                <p>My Trips</p>
+            </a>
+        </li>
+    </ul>
+    {% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'just_cabs_base.html' %} 
+{% load static %} 
+{% load crispy_forms_tags %} 
+{% block title %}Justrip | Owner Notifications {% endblock %} 
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <button type="button" class="btn btn-primary" onclick="detail_view()">View Summary</button>
+        <button type="button" class="btn btn-primary" onclick="normal_view()">Normal View</button>
+        
+        <div class="row" id="detail_view" style="display: none;">
+            <div class="col-md-7">
+                <button class="btn btn-primary">Oneway Trips - {{one_way}}, (Rs {{one_way_amount}})</button>
+                <button class="btn btn-primary">Round Trips - {{round_trip}}, (Rs {{round_trip_amount}})</button>
+            </div>
+            <table class="table table-striped table-dark">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Car Type</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Cash to Collect</th>
+                        <th scope="col">Vendor Cost</th>
+                        <th scope="col">Trip Itinerary</th>
+                        <th scope="col">Start Date</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Accept</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trip in trips %}
+                    <tr>
+                        <th scope="row">{{trip.0.trip_no}}</th>
+                        <th scope="row">{{trip.0.car_type}}</th>
+                        <th scope="row">{{trip.0.bill_amount}}</th>
+                        <th scope="row">{{trip.1.balance}}</th>
+                        <th scope="row">{{trip.0.vendor_amount}}</th>
+                        <th scope="row">{{trip.0.pickup_city}} -> <br/>{{trip.0.drop_city}}</th>
+                        <th scope="row">{{trip.0.pickup_date}}</th>
+                        <th scope="row">{{trip.0.pickup_time}}</th>
+                        <th scope="row">{{trip.0.pickup_address}}</th>
+                        <th scope="row">{% if verified %}
+                            <form method="POST">
+                                {% csrf_token %}{% if not trip.0.owner %}
+                                {% if trip.2 %}
+                                <button class="btn btn-success" value="{{trip.0.id}}" name="accept">Accept</button> {% else %}
+                                <button class="btn btn-success" value="{{trip.0.id}}" name="acceptowner">Accept</button> {% endif %}
+                                {% else %}
+                                <button class="btn btn-primary" disabled>Accept</button> {% endif %}
+                            </form>
+                            {% else %}
+                                    <button class="btn btn-primary" disabled>Accept</button> {% endif %}
+                        </th>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row" id="row_view">
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header card-header-primary">
+                        <h4 class="card-title">Notifications</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                {% for n in notify %}
+                                <a href="{% url 'dashboard' %}">
+                                    <h6 class="card-title">{{n.date}}</h6> 
+                                    <div class="alert alert-success alert-with-icon" data-notify="container">
+                                        <i class="material-icons" data-notify="icon">add_alert</i>
+                                        <span data-notify="message">{{n.text}}</span>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function detail_view(){
+        $('#row_view').hide();
+        $('#detail_view').css('display','block');
+    }
+    function normal_view(){
+        $('#row_view').css('display','block');
+        $('#detail_view').hide();
+    }
+</script>
+{% endblock %}
+{% block sidebar %}
+<ul class="nav">
+       
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_driver_details' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Diver Profile</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'owner_car' %}">
+            <i class="material-icons">directions_car</i>
+            <p>My Car</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

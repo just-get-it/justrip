@@ -1,0 +1,68 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% block title %}Justrip | Customer Create Trip{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if profile.is_verified %}
+                <div class="alert alert-success">
+                    <span> Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Verification Pending</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+
+        </div>
+        <br>
+    </div>
+</div>
+{% endblock %} {% block customjs %}
+<script>
+    function ImgDisplay(input, Id) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            console.log('Reading');
+            reader.onload = function(e) {
+                $('#' + Id).attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]); // convert to base64 string
+        }
+    }
+</script>
+{% endblock %}

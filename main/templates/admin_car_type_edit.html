@@ -1,0 +1,184 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Admin Car Types{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <h2>Admin Panel</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                {% if staff %}
+                <fieldset disabled>
+                    {% endif %}
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{tform.name | as_crispy_field}}
+                            </div>
+                            <div class="col-md-6">
+                                {% if tform.instance.picture %}
+                                <img id="car_type_image_display" src="{{tform.instance.picture.url}}" height="70"> {% else %}
+                                <img id="car_type_image_display" src="{% static 'img/taxi.png' %}" height="70"> {% endif %} {{tform.picture}}
+                            </div>
+                            <div class="col-md-6">
+                                {{tform.description | as_crispy_field}}
+                            </div>
+                            <div class="col-md-6">
+                                {{tform.redeem_wallet_amount | as_crispy_field}}
+                            </div>
+                            <div class="col-md-6">
+                                {{tform.local_oneway_min_km | as_crispy_field}}
+                            </div>
+                            <div class="col-md-6">
+                                {{tform.local_oneway_min_charge | as_crispy_field}}
+                            </div>
+                            <div class="col-md-6">
+                                {{tform.local_oneway_rate_per_km | as_crispy_field}}
+                            </div>
+                            <div class="col-md-6">
+                                {{tform.local_round_min_km | as_crispy_field}}
+                            </div>
+                            <div class="col-md-6">
+                                {{tform.local_round_min_charge | as_crispy_field}}
+                            </div>
+                            <div class="col-md-6">
+                                {{tform.local_round_rate_per_km | as_crispy_field}}
+                            </div>
+                            <div class="col-md-6">
+                                {{tform.local_round_driver_allowance | as_crispy_field}}
+                            </div>
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                    {% if staff %}
+                </fieldset>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <h3>History:</h3>
+                {% for event in events %}
+                <div class="card text-white">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col text-left">
+                                <p>{{event.email}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <h5>{{event.text}}</h5>
+                            </div>
+                            <div class="col-4 text-right">
+                                <p>{{event.time}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}{% block customjs %}
+<script>
+    function ImgDisplay(input, Id) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            console.log('Reading');
+            reader.onload = function(e) {
+                $('#' + Id).attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]); // convert to base64 string
+        }
+    }
+</script>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_unverified_trips' %}">
+            <i class="material-icons">navigation</i>
+            <p>Trips</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_customers' %}">
+            <i class="material-icons">people_alt</i>
+            <p>Customers</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'admin_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>Cars</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_owners' %}">
+            <i class="material-icons">person</i>
+            <p>Owners</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_car_types' %}">
+            <i class="material-icons">local_taxi</i>
+            <p>Car Types</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_charts' %}">
+            <i class="material-icons">assessment</i>
+            <p>Graphs</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

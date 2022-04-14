@@ -1,0 +1,329 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Customer Select Car{% endblock %} {% block customcss %}
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+<style>
+    .whitetext {
+        color: white;
+    }
+</style>
+{% load mapbox_location_field_tags %} {% location_field_includes %} {% include_jquery %} {% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if profile.is_verified %}
+                <div class="alert alert-success">
+                    <span> Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Verification Pending</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <form method="GET">
+                        <div class="card-header card-header-primary">
+                            <div class="row p-3">
+                                <div class="col-md-4">
+                                    <div class="row p-3">
+                                        <div class="col-md">
+                                            <h6>{{vehicle_type_data.name}} <br> {{vehicle_type_data.description}}</h6>
+                                        </div>
+                                    </div>
+                                    <div class="row p-3 text-center">
+                                        <img src="{{vehicle_type_data.picture.url}}" height="150" width="250">
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="row p-3">
+                                        <div class="col-md-4">
+                                            <h6>Pickup Date:</h6>
+                                            <h4><i class="material-icons ic-m">event</i>{{selected.pickup_date}}</h4>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6>Pickup Time:</h6>
+                                            <h4><i class="material-icons ic-m">alarm_on</i>{{selected.pickup_time}}</h4>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6>Distance:</h6>
+                                            <h4><i class="material-icons ic-m">multiple_stop</i>{{distance}} Km</h4>
+                                        </div>
+                                    </div>
+                                    <div class="row p-3">
+                                        <div class="col-md-12">
+                                            <h5><span class="material-icons ic-m">my_location</span> {{pickup_address}}</h5>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <h5><span class="material-icons ic-m">place</span> {{drop_address}}</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                             <div class="row">
+                                <input type="hidden" class="form-control" name="pickup_date" value={{selected.pickup_date}} required>
+                               <input type="hidden" class="form-control" name="pickup_time" value={{selected.pickup_time}} required>
+                                    <input type="hidden" name="pickup_location" value="{{selected.pickup_location}}">
+                                    <input type="hidden" name="drop_location" value="{{selected.drop_location}}">
+                                    <input type="hidden" name="days" value="{{selected.days}}">
+                                    <input type="hidden" name="trip_type" value="{{selected.trip_type}}">
+                                    <input type="hidden" name="vehicle_type" value="{{selected.vehicle_type}}">
+                                    <input type="hidden" name="vehicle_group" value="{{selected.vehicle_group}}">
+                                    <input type="hidden" name="trip_way" value="{{selected.trip_way}}">
+                                    <input type="hidden" name="trip_variant" value="{{selected.trip_variant}}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h1>{{ vehicle_type}}</h1>
+                            {% comment %} <p>base_cost= <b>{{ total_charges.base_cost}}</b></p>
+
+                            <p>total_distance= <b>{{ total_charges.total_distance}}</b></p>
+                            <p>Kms_covered_in_base_fare= <b>{{ total_charges.Kms_covered_in_base_fare}}</b></p>
+                            <p>applicable_distance= <b>{{ total_charges.applicable_distance}}</b></p>
+                            <p>traffic_surge= <b>{{ total_charges.traffic_surge}}</b></p>
+                            <p>fuel_surge_cost= <b>{{ total_charges.fuel_surge_cost}}</b></p>
+                            <p>route_surge_cost= <b>{{ total_charges.route_surge_cost}}</b></p>
+                            <p>ride_time= <b>{{ total_charges.ride_time}}</b></p>
+                            <p>waiting_time= <b>{{ total_charges.waiting_time}}</b></p>
+                            <p>trip_duration= <b>{{ total_charges.trip_duration}}</b></p>
+                            <p>ride_rate_per_min= <b>{{ total_charges.ride_rate_per_min}}</b></p>
+                            <p>vehicle_waiting_rate_per_minute= <b>{{ total_charges.vehicle_waiting_rate_per_minute}}</b></p>
+                            <p>entertainment_rate_per_min= <b>{{ total_charges.entertainment_rate_per_min}}</b></p>
+                            <p>driver_waiting_rate= <b>{{ total_charges.driver_waiting_rate}}</b></p>
+                            <p>driver_waiting_allowance_rate= <b>{{ total_charges.driver_waiting_allowance_rate}}</b></p>
+                            <p>night_allowance_rate= <b>{{ total_charges.night_allowance_rate}}</b></p>
+                            <p>driver_stay_allowance_per_day= <b>{{ total_charges.driver_stay_allowance_per_day}}</b></p>
+
+                            <p>Total Charges= <b>{{ total_charges.trip_cost}}</b></p>
+                            <p>redeem_wallet= <b>{{ total_charges.redeem_wallet}}</b></p>
+                            <p>wallet_balance= <b>{{ total_charges.wallet_balance}}</b></p>
+                            <p>corporate_coupon= <b>{{ total_charges.corporate_coupon}}</b></p>
+
+                            <p>conviniance_charge= <b>{{ total_charges.conviniance_charge}}</b></p>
+                            <p>Effective_Trip_Cost= <b>{{ total_charges.Effective_Trip_Cost}}</b></p>
+                            <p>gst= <b>{{ total_charges.gst}}</b></p>
+                            <p>Final_Trip_Cost= <b>{{ total_charges.Final_Trip_Cost}}</b></p>
+                            <p>cost_to_vendor= <b>{{ total_charges.cost_to_vendor}}</b></p>
+                            <p>cost_to_driver= <b>{{ total_charges.cost_to_driver}}</b></p> {% endcomment %}
+                            <h2 class="whitetext">Available {{ selected.vehicle_type}}'s:</h2>
+                            <div>
+
+                                {% for car in available_cars %}
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                <div class="col-5 text-center">
+                                    <img src="{{car.picture.url}}" alt="{{car.pk}} image" width="300" height="180" >
+                                    <h6 class="whitetext">{{car.pk}}</h6>
+                                    {% comment %} <h6 class="whitetext">{{type.0.description}}</h6> {% endcomment %}
+                                </div> 
+                                <div class="col text-right">
+                                    <button type="submit" class="btn btn-primary" value="{{car.pk}}" name="vehicle_name">Select</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                                    {% empty %}
+                                    No {{ selected.vehicle_type}}'s are available
+                                {% endfor %}
+                            </div>
+                                
+                            
+                            <!-- {% for type in car_types %}
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-5 text-center">
+                                            <img height="200" src='{{type.0.picture.url}}'>
+                                            <h6 class="whitetext">{{type.0.name}}</h6>
+                                            <h6 class="whitetext">{{type.0.description}}</h6>
+                                        </div> -->
+                                        <!-- {% if trip_type == 'oneway' %}
+                                        <div class="col text-right">
+                                            <h3 class="whitetext">Rs.{{type.1}}</h3>
+                                            <h4 class="">Min. Distance: {{type.0.local_oneway_min_km}} KMs</h4>
+                                            <h4 class="">Min. Charge: Rs.{{type.0.local_oneway_min_charge}}</h4>
+
+                                            <p class="small">Rs.{{type.0.local_oneway_rate_per_km}} per km after minimum distance</p>
+                                            <button type="submit" class="btn btn-primary" value="{{type.0.id}}" name="car_type">Book</button>
+                                        </div>
+                                        {% else %} -->
+                                        <!-- <div class="col text-right">
+                                            <h3 class="whitetext">Rs.{{type.1}}</h3>
+                                            <h4 class="">Min. Distance: {{type.0.local_round_min_km}} KMs</h4>
+                                            <h4 class="">Min. Charge: Rs.{{type.0.local_round_min_charge}}</h4>
+
+                                            <p class="small">Rs.{{type.0.local_round_rate_per_km}} per km after minimum distance</p>
+                                            <button type="submit" class="btn btn-primary" value="{{type.0.id}}" name="car_type">Book</button>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %} -->
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% if trip_type == 'oneway' %}
+            <div class="col-md-4">
+                <div class="card">
+                    <!-- <div class="card-header card-header-primary">
+                    <div class="row">
+                        <div class="col">
+                            <h4 class='card-title'>Trip Benifits</h4>
+                        </div>
+                    </div>
+                </div> -->
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card-body">
+                                    <h3 class='text-white'>Oneway trip benifits</h3>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <h1><i style="font-size:32px" class="material-icons">360</i></h1>
+                                        </div>
+                                        <div class="col-md">
+                                            <h6 class="text-white">One Way Fares</h6>
+                                            Special one-way fares to just get dropped off to your destination
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <h1><i style="font-size:32px" class="material-icons">how_to_reg</i></h1>
+                                        </div>
+                                        <div class="col-md">
+                                            <h6 class="text-white">Highly-rated drivers</h6>
+                                            Experienced and polite drivers with well-serviced, comfortable cabs
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <h1><i style="font-size:32px" class="material-icons">receipt_long</i></h1>
+                                        </div>
+                                        <div class="col-md">
+                                            <h6 class="text-white">All inclusive pricing</h6>
+                                            Prices inclusive of GST, state taxes and tolls on majority of the routes
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %} {% if trip_type == 'round' %}
+            <div class="col-md-4">
+                <div class="card">
+                    <!-- <div class="card-header card-header-primary">
+                    <div class="row">
+                        <div class="col">
+                            <h4 class='card-title'>Trip Benifits</h4>
+                        </div>
+                    </div>
+                </div> -->
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card-body">
+                                    <h4 class='text-white'>Round trip Benifits</h4>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <h1><i style="font-size:32px" class="material-icons">local_see</i></h1>
+                                        </div>
+                                        <div class="col-md">
+                                            <h6 class="text-white">Convenient sightseeing</h6>
+                                            Comfortable cabs for great vacation experiences
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <h1><i style="font-size:32px" class="material-icons">local_taxi</i></h1>
+                                        </div>
+                                        <div class="col-md">
+                                            <h6 class="text-white">Cab stays with you</h6>
+                                            Take all the time you need, our driver will wait!
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <h1><i style="font-size:32px" class="material-icons">multiple_stop</i></h1>
+                                        </div>
+                                        <div class="col-md">
+                                            <h6 class="text-white">Multiple stops</h6>
+                                            One ride for any number of pick-ups and drops
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endblock %}{% block sidebar %}
+    <ul class="nav">
+        <li class="nav-item active">
+            <a class="nav-link" href="{% url 'customer_create_trip' %}">
+                <i class="material-icons">alt_route</i>
+                <p>Create Trip</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'customer_details' %}">
+                <i class="material-icons">account_box</i>
+                <p>My Profile</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'customer_active_bookings' %}">
+                <i class="material-icons">navigation</i>
+                <p>My Trips</p>
+            </a>
+        </li>
+    </ul>
+    {% endblock %}

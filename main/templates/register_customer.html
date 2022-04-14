@@ -1,0 +1,54 @@
+{% extends 'just_cabs_base.html' %} {% block title %}Justrip | Register{% endblock %} {% block content %} {% if exist %}
+
+<script type="text/javascript">
+    alert("Email Id Already Exists !!");
+</script>
+
+{% endif %}
+
+<div class="row">
+    <div class="col-sm"></div>
+    <div class="col-lg-4 col-md-7 py-5 my-auto">
+        <div class="container border py-5 px-4 my-5 rounded shadow-lg">
+            <h1 class="text-center text-primary mb-0">Create an customer account</h1>
+            <hr />
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group p-0 mb-1">
+                    <input type="name" name="name" placeholder=" Name" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" />
+                </div>
+                <div class="form-group p-0 mb-1">
+                    <input type="email" name="email" placeholder=" Email ID" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" />
+                </div>
+                <div class="form-group p-0 mb-1">
+                    <input type="password" name="password" placeholder="Password" class="form-control" id="exampleInputPassword1" />
+                </div>
+                <div class="form-group p-0 mb-1">
+                    <input type="number" name="contact" placeholder="Contact Number" class="form-control" id="exampleInputPassword1" />
+                </div>
+
+                <div class=" ml-3   custom-control custom-radio custom-control-inline">
+                    <input type="radio" name="gender" value="Male" id="customRadio1" name="customRadio" class="custom-control-input" />
+                    <label class="custom-control-label" for="customRadio1">Male</label>
+                </div>
+                <div class="custom-control custom-radio custom-control-inline">
+                    <input type="radio" name="gender" value="Female" id="customRadio2" name="customRadio" class="custom-control-input" />
+                    <label class="custom-control-label" for="customRadio2">Female</label>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg shadow-lg mt-2 px-3">
+              Register
+            </button>
+                </div>
+                <hr />
+
+                <p class="h5 text-black-50 text-center mt-3">
+                    Already have an account?<a href="{% url 'login_page' %}">Login</a>
+                </p>
+            </form>
+        </div>
+    </div>
+    <div class="col-sm"></div>
+</div>
+
+{% endblock %}

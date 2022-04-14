@@ -1,0 +1,114 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Vendor Cars{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-1">
+                <a href="{% url 'vendor_add_car' %}" class="btn btn-primary">Add Car</a>
+            </div>
+        </div>
+        <br>
+        <br>
+        <div class="row">
+            {% for car in cars %}
+            <div class="col-xl-3 col-lg-6">
+                <div class="card card-profile">
+                    <div class="card-avatar">
+                        {% if car.car_side_left %}
+                        <img id="car_side_left_picture" class="img" src="{{car.car_side_left.url}}"> {% else %}
+                        <img id="car_side_left_picture" class="img" src="{% static 'img/car.png' %}">{% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h4 class="card-title">{{car.name}}</h4>
+                        {% if car.is_verified %}
+                        <h5 class="card-category">
+                            <span class="text-success">Verified</span></h5>
+                        {% else %}
+                        <h5 class="card-category">
+                            <span class="text-danger">Pending Verification</span></h5>
+                        {% endif %}
+                        <h4 class="card-title"><strong>No: </strong>{{car.licence_plate_no}}</p>
+                            {% if car.is_verified %}
+                            <a class="btn btn-primary" href="{% url 'vendor_edit_car' car_id=car.id %}" role="button">
+                            View
+                        </a> {% else %}
+                            <a class="btn btn-primary" href="{% url 'vendor_edit_car' car_id=car.id %}" role="button">
+                            Edit
+                        </a> {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'vendor_home' %}">
+            <i class="material-icons">home</i>
+            <p>Home</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'owner_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'vendor_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'vendor_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>My Cars</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'vendor_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

@@ -1,0 +1,596 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Customer
+Create Trip{% endblock %} {% block customcss %}
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+{% load mapbox_location_field_tags %} {% location_field_includes %} {% include_jquery %} {% endblock %} {%block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if profile.is_verified %}
+                <div class="alert alert-success">
+                    <span> Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Verification Pending</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+
+            <div class="col-md-8">
+                <form method="GET" onsubmit="return submit_pickup_location()">
+                    {% if not drop_location %}
+
+
+                    <!-- Trip type -->
+                    <!-- default rent -->
+                    <!-- trip variant -->
+                    <!-- default is local -->
+
+                    <h6>Vehial Selection</h6>
+                    <div class="row">
+                    <!-- Vehical groups -->
+                    <div class="col-3">
+                    <label for="group">Vehical Group</label>
+
+
+                    <select class="form-control" class="whitetext" name="vehicle_group" id="group" onchange="change_vehical_info()">
+                        {% for group in vehicle_groups %}
+                        {% if selected.vehicle_group == group.pk %}
+                        <!-- Default car -->
+
+                        <option value="{{group}}" class="whitetext" selected="selected"><img src="{{group.picture.url}}" alt="group" width="20px" height="20px"> {{group}}</option>
+                        {% else %}
+
+                        <option value="{{group}}" class="whitetext"><img src="{{group.picture.url}}" alt="group" width="20px" height="20px"> {{group}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                    <!-- Vehical type -->
+                    <div class="col-3">
+                    <label for="type">Vehical type</label>
+                    <input class="form-control" type="text" id="selected_vehical_type" hidden value="{{selected.vehicle_type}}">
+                    <select class="form-control" class="whitetext" name="vehicle_type" id="type" onchange="change_vehical_info()">
+                        <!-- Default None -->
+                        <option class="whitetext" value="">None</option>
+                    </select>
+                </div>
+                    <!-- Vehical company -->
+                    <div class="col-3">
+                    <label for="company">Vehicle company</label>
+                    <input class="form-control" type="text" id="selected_vehical_company" hidden value="{{selected.vehicle_company}}">
+
+                    <select class="form-control" name="vehicle_company" id="company" onchange="change_vehical_info()">
+                        <!-- Default None -->
+
+                        <option class="whitetext" value="">None</option>
+                    </select>
+                </div>
+                    <!-- Vehical name -->
+                    <div class="col-3">
+                    <label for="name">Vehicle name</label>
+                    <input class="form-control" type="text" id="selected_vehical_name" hidden value="{{selected.vehicle_name}}">
+                    <select class="form-control" name="vehicle_name" id="name" onchange="change_vehical_info()">
+                        <!-- Default None -->
+                        <option class="whitetext" value="">None</option>
+                    </select>
+                </div>
+                </div>
+                    <h6>Trip Selection</h6>
+                    <div class="row">
+                    <div class="col-4">
+                    <label for="trip_type">Trip Type</label>
+
+                    <select class="form-control" required name="trip_type" id="trip_type" value="RENTAL">
+                        {% for type in trip_types %}
+
+                        {% if type.0 == selected.trip_type %}
+                        <option class="whitetext" selected value="{{type.0}}">{{type.1}}</option>
+                        {% else %}
+                        <option class="whitetext" value="{{type.0}}">{{type.1}}</option>
+                        {% endif %}
+
+                        {% endfor %}
+                    </select>
+                </div>
+                    <div class="col-4">
+                    <label for="trip_variant">Trip Variant</label>
+
+                    <select class="form-control" required  name="trip_variant" id="trip_variant" value="LOCAL">
+                        {% for variant in trip_variants %}
+
+                        {% if variant.0 == selected.trip_variant %}
+                        <option class="whitetext" selected value="{{variant.0}}">{{variant.1}}</option>
+                        {% else %}
+                        <option class="whitetext" value="{{variant.0}}">{{variant.1}}</option>
+
+                        {% endif %}
+
+                        {% endfor %}
+                    </select>
+                </div>
+                    <div class="col-4">
+                    <label for="trip_way">Trip Way</label>
+
+                    <select  class="form-control" required  name="trip_way" id="trip_way">
+                        {% for way in trip_ways %}
+
+                        {% if way.0 == selected.trip_way %}
+
+                        <option class="whitetext" selected value="{{way.0}}">{{way.1}}</option>
+                        {% else %}
+                        <option class="whitetext" value="{{way.0}}">{{way.1}}</option>
+                        {% endif %}
+
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <h6>Date and timings</h6>
+              
+                    
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-4">
+                            <label class="whitetext">Select Date:</label> <input value="{{selected.pickup_date}}"
+                                type="date" class="form-control" id="pickup_date" name="pickup_date" >
+                        </div>
+                        <div class="col-4">
+                            <label class="whitetext">Select Time:</label> <input type="time" id="pickup_time"
+                                value="{{selected.pickup_time}}" class="form-control" name="pickup_time" >
+                        </div>
+                        <div class="col-md-3" id='days'  style="display: none;" >
+                            <label  id="days_label">Select no of days:</label>
+                            <select class="form-control"  name='days' >
+                                
+                                {% if selected.days == '1' %}
+                                <option selected value="{{selected.days}}">Same Day</option>
+                                {% else %}    
+                                <option selected value="{{selected.days}}">{{selected.days}} Days</option>
+                                {% endif %}
+                        
+                        <option value="2">2 Days</option>
+                        <option value="3">3 Days</option>
+                        <option value="4">4 Days</option>
+                        <option value="5">5 Days</option>
+                        <option value="6">6 Days</option>
+                        <option value="7">7 Days</option>
+                        <option value="8">8 Days</option>
+                        <option value="9">9 Days</option>
+                        <option value="10">10 Days</option>
+                        <option value="11">11 Days</option>
+                        <option value="12">12 Days</option>
+                        <option value="13">13 Days</option>
+                    </select>
+                        </div> 
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="text-white"><i class="material-icons">pin_drop</i><span
+                                    id='display_address'></span></h5>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-10">
+                            {{tform }}
+                        </div>
+                   
+                        <div class="col-2">
+                            
+                            <button type="submit" class="btn btn-primary">Next</button>
+                        </div>
+                     
+                    </div>{{ tform.media }}
+                </form>
+            </div>
+            {% if trip_type == 'oneway' %}
+            <div class="col-md-4">
+                
+            </div>{{ tform.media }}
+            </form>
+        </div>
+        {% if trip_type == 'oneway' %}
+        <div class="col-md-4">
+            <div class="card">
+                <!-- <div class="card-header card-header-primary">
+                    <div class="row">
+                        <div class="col">
+                            <h4 class='card-title'>Trip Benifits</h4>
+                        </div>
+                    </div>
+                </div> -->
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card-body">
+                                <h3 class='text-white'>Oneway trip benifits</h3>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <h1><i style="font-size:32px" class="material-icons">360</i></h1>
+                                    </div>
+                                    <div class="col-md">
+                                        <h6 class="text-white">One Way Fares</h6>
+                                        Special one-way fares to just get dropped off to your destination
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <h1><i style="font-size:32px" class="material-icons">how_to_reg</i></h1>
+                                    </div>
+                                    <div class="col-md">
+                                        <h6 class="text-white">Highly-rated drivers</h6>
+                                        Experienced and polite drivers with well-serviced, comfortable cabs
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <h1><i style="font-size:32px" class="material-icons">receipt_long</i></h1>
+                                    </div>
+                                    <div class="col-md">
+                                        <h6 class="text-white">All inclusive pricing</h6>
+                                        Prices inclusive of GST, state taxes and tolls on majority of the routes
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %} {% if trip_type == 'round' %}
+        <div class="col-md-4">
+            <div class="card">
+                <!-- <div class="card-header card-header-primary">
+                    <div class="row">
+                        <div class="col">
+                            <h4 class='card-title'>Trip Benifits</h4>
+                        </div>
+                    </div>
+                </div> -->
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card-body">
+                                <h4 class='text-white'>Round trip Benifits</h4>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <h1><i style="font-size:32px" class="material-icons">local_see</i></h1>
+                                    </div>
+                                    <div class="col-md">
+                                        <h6 class="text-white">Convenient sightseeing</h6>
+                                        Comfortable cabs for great vacation experiences
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <h1><i style="font-size:32px" class="material-icons">local_taxi</i></h1>
+                                    </div>
+                                    <div class="col-md">
+                                        <h6 class="text-white">Cab stays with you</h6>
+                                        Take all the time you need, our driver will wait!
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <h1><i style="font-size:32px" class="material-icons">multiple_stop</i></h1>
+                                    </div>
+                                    <div class="col-md">
+                                        <h6 class="text-white">Multiple stops</h6>
+                                        One ride for any number of pick-ups and drops
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <br>
+</div>
+</div>
+{% endif %}
+{% endblock %}
+{% block customjs %}
+<script>
+    var loc = []
+
+    function mumbojumbo() {
+        // location = $('#map').val();
+        // console.log(location);
+
+        // $.ajax({
+        //     type: 'POST',
+        //     url: "",
+        //     data: {
+        //         get_address: true,
+        //         location: location,
+        //         csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+        //     },
+        //     cache: false,
+        //     dataType: "json",
+        //     success: function(data) {
+        //         console.log(data)
+        //         $.notify({
+        //             icon: "add_alert",
+        //             message: 'Address selected!'
+
+        //         }, {
+        //             type: 'success',
+        //             timer: 3000,
+        //             placement: {
+        //                 from: 'top',
+        //                 align: 'center'
+        //             }
+        //         });
+        //     }
+        // });
+    }
+
+    function enable_days() {
+        $('#days').removeAttr('disabled');
+        $('#days').show();
+        $('#days_label').show();
+    }
+
+    function disable_days() {
+        $('#days').attr({
+            'disabled': 'True'
+        });
+        $('#days').hide();
+        $('#days_label').hide();
+    }
+
+    function submit_pickup_location() {
+        // pickup_array = ($('#map').val()).split(',');
+        // var pickup_location = pickup_array.reverse()
+        var pickup_location = $('#map').val()
+        if (pickup_location == "") {
+            alert("Kindly Select Pickup Location");
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
+    function ImgDisplay(input, Id) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            console.log('Reading');
+            reader.onload = function (e) {
+                $('#' + Id).attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]); // convert to base64 string
+        }
+    }
+
+    function create_option(key) {
+
+        return `<option class="whitetext" value=${key}>${key}</option>`
+    }
+    function create_options(set) {
+        array = Array.from(set)
+        console.log(array);
+        let options = `<option class="whitetext" value="">None</option>`
+        set.forEach((val) => {
+            options += create_option(val)
+        })
+        return options
+    }
+
+
+    async function get_vehical_info(url = "ajax_vehical_filter?group=car") {
+        selected_group = document.getElementById('group').value
+        selected_type = document.getElementById('type').value
+        selected_company = document.getElementById('company').value
+        selected_name = document.getElementById('name').value
+        vehical_type = await fetch(`${window.location.origin}/${url}`)
+            .then((res) => res.json())
+            .then((data) => data);
+        console.log(vehical_type);
+        let vehicle_companies = new Set()
+        let vehicle_names = new Set()
+        let vehicle_type = new Set()
+        let vehicle_group = new Set()
+        vehical_type.map((data, index) => {
+
+
+            vehicle_companies.add(data.fields.company);
+            vehicle_names.add(data.pk);
+            vehicle_group.add(data.fields.group);
+            vehicle_type.add(data.fields.type);
+
+
+        });
+        // document.getElementById('group').innerHTML = create_options(vehicle_group)
+        document.getElementById('company').innerHTML = create_options(vehicle_companies)
+        document.getElementById('type').innerHTML = create_options(vehicle_type)
+        document.getElementById('name').innerHTML = create_options(vehicle_names)
+
+        document.getElementById('group').value = selected_group
+        document.getElementById('type').value = selected_type
+        document.getElementById('company').value = selected_company
+        document.getElementById('name').value = selected_name
+
+        console.log(create_options(vehicle_group), create_options(vehicle_names), create_options(vehicle_type), create_options(vehicle_companies));
+
+    }
+    // function setSelectedValue(selectObj, valueToSet) {
+    //     for (var i = 0; i < selectObj.options.length; i++) {
+    //         console.log(selectObj.options[i].text);
+    //         if (selectObj.options[i].text == valueToSet) {
+    //             selectObj.options[i].selected = true;
+    //             return;
+    //         }
+    //     }
+    // }
+    const setSelectedValue = (query, value) => {
+        console.log(query, value);
+        [...document.querySelector(query).options]
+            .filter(x => {
+                console.log("x", x);
+                return x.value === value
+            })[0]
+            .setAttribute('selected', true);
+
+        console.log("end of function");
+
+    };
+
+let setMinDateAndTime=()=>{
+
+    let pickup_date = document.getElementById("pickup_date")
+    let pickup_time = document.getElementById("pickup_time")
+
+let n =  new Date();
+let y = n.getFullYear();
+let m = n.getMonth() + 1;
+let d = n.getDate();
+if(m < 10)
+   m = '0' + m.toString();
+else if(d < 10)
+   d = '0' + d.toString();
+
+let minDate = y + '-' + m + '-' + d
+let maxDate = y + '-' + "0"+(parseFloat(0+m) + 1) + '-' + d
+
+let hours= n.getHours() 
+let minutes= n.getMinutes()
+minTime=hours+":"+minutes
+pickup_date.setAttribute("min",minDate)
+
+// pickup_time.setAttribute("min",minTime)
+
+}
+
+    (async function () {
+        setMinDateAndTime()
+        let group = document.getElementById('group').value;
+        let url = `ajax_vehical_filter?group=${group}`
+        let company = document.getElementById('selected_vehical_company').value;
+        let type = document.getElementById('selected_vehical_type').value;
+        if (company) {
+            url += `&company=${company}`
+        }
+        if (type) {
+            url += `&type=${type}`
+        }
+        get_vehical_info(url)
+        await get_vehical_info(url)
+
+        // Get slect obj and selected item
+        pre_type_value = document.getElementById('selected_vehical_type').value
+        pre_company_value = document.getElementById('selected_vehical_company').value
+        pre_name_value = document.getElementById('selected_vehical_name').value
+
+        setSelectedValue("#type", pre_type_value)
+        setSelectedValue('#company', pre_company_value)
+        setSelectedValue("#name", pre_name_value)
+
+        let trip_way=document.getElementById("trip_way").value
+        if (trip_way=="ROUND"){
+            document.getElementById("days").style.display="block"
+        }
+        else{
+            document.getElementById("days").style.display="none"
+            console.log(e.target.value);
+        }
+  
+
+
+    })();
+
+    function change_vehical_info() {
+
+        let group = document.getElementById('group').value;
+        let url = `ajax_vehical_filter?group=${group}`
+        let company = document.getElementById('company').value;
+        let type = document.getElementById('type').value;
+        if (company) {
+            url += `&company=${company}`
+        }
+        if (type) {
+            url += `&type=${type}`
+        }
+        get_vehical_info(url)
+        console.log(group, company, type);
+    }
+
+    document.getElementById("trip_way").addEventListener("change",(e)=>{
+        if (e.target.value=="ROUND"){
+            document.getElementById("days").style.display="block"
+        }
+        else{
+            document.getElementById("days").style.display="none"
+            console.log(e.target.value);
+        }
+    })
+</script>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'customer_create_trip' %}">
+            <i class="material-icons">alt_route</i>
+            <p>Create Trip</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'customer_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'customer_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

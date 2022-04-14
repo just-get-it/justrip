@@ -1,0 +1,256 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Admin Customer Wallet{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8"> {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <h3 class="text-white">{{wallet}} (Customer Wallet)</h3>
+                <!-- <i class="material-icons">payments</i>
+                <i class="material-icons">account_balance</i>  -->
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header card-header-primary">
+                        <h4 class="card-title ">Customer Transactions</h4>
+                        <p class="card-category">Transaction History</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead class=" text-primary">
+                                            <tr>
+                                                <th>
+                                                    ID
+                                                </th>
+                                                <th>
+                                                    Date
+                                                </th>
+                                                <th>
+                                                    Method
+                                                </th>
+												<th>
+                                                    Status
+                                                </th>
+                                                <th>
+                                                    Amount
+                                                </th>
+                                                <th>
+                                                    Redeem
+                                                </th>
+                                                <th>
+                                                    Wallet
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for transaction in transactions %}
+                                            <tr>
+                                                <td><a href="{% url 'admin_transaction_det' transaction_id=transaction.id %}">{{transaction.id}}</a>
+                                                </td>
+                                                <td>
+                                                    {{transaction.time}}
+                                                </td>
+                                                <td>
+                                                    {% if transaction.customer_to_company %} Paid Online {% if transaction.is_redeemed %} (Redeem Wallet) {% else %} (RazorPay) {% endif %} {% endif %} {% if transaction.company_to_customer %} Cashback (Wallet) {% endif %}
+                                                    {% if transaction.customer_to_vendor %}
+                                                    Paid to Driver(Cash)
+                                                    {% endif %}
+
+                                                </td>
+												<td>
+                                                {% if transaction.status == "Failed" %}
+                                                    <span style='color:red;'>{{transaction.status}}</span>
+                                                {% else %}
+                                                    <span>{{transaction.status}}</span>
+                                                {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if transaction.debit %}
+                                                    <span style='color:red;'>-{{transaction.amount}}</span> {% endif %} {% if transaction.credit %}
+                                                    <span style='color:green;'>+{{transaction.amount}}</span> {% endif %}
+                                                </td>
+                                                <td class="text-primary">
+                                                    {{transaction.running_balance_redeem}}
+                                                </td>
+                                                <td class="text-primary">
+                                                    {{transaction.running_balance}}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col text-center">
+                                <div style="display: inline;">
+                                    {% if transactions.has_other_pages %}
+                                    <ul class="pagination">
+                                        {% if transactions.has_previous %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ transactions.previous_page_number }}">&laquo;</a></li>
+                                        {% else %}
+                                        <li class="page-item disabled"><a class="page-link"><span>&laquo;</span></a></li>
+                                        {% endif %} {% for i in transactions.paginator.page_range %} {% if transactions.number == i %}
+                                        <li class="page-item active"><a class="page-link" style="background-color: #a84ab7 !important;;"><span class="text-white">{{ i }} </span></a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                                        {% endif %} {% endfor %} {% if transactions.has_next %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ transactions.next_page_number }}">&raquo;</a></li>
+                                        {% else %}
+                                        <li class="disabled page-item"><a class="page-link"><span>&raquo;</span></a></li>
+                                        {% endif %}
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card card-stats">
+                            <div class="card-header card-header-success card-header-icon">
+                                <div class="card-icon">
+                                    <i class="material-icons">account_balance_wallet</i>
+                                </div>
+                                <!-- <p class="card-category">Wallet Balance</p> -->
+                                <p class="card-category">Wallet Balance</p>
+                                <h3 class="card-title" style="color: green;">₹{{wallet.balance}}</h3>
+                                <!-- <h3 class="card-title">Wallet Balance</h3>
+                                <h4><span style="color: green;">₹34,245</span></h4> -->
+                            </div>
+                            <hr>
+							<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample1" aria-expanded="false" aria-controls="collapseExample">
+                                Add Money
+                              </button>
+                            <div class="collapse" id="collapseExample1">
+                                <div class="card card-body">
+                                    <form method="POST">
+                                    {% csrf_token %}
+                                        <div class="row">
+                                            <div class="col-md-12 text-left">
+                                                <label>Amount:<span style="color:red">*</span></label>
+                                                <input type="number" class='form-control' name='amount' placeholder="Enter Amount" required>
+                                            </div>
+                                            <div class="col-md-12 text-left">
+                                                <label>Note:<span style="color:red">*</span></label>
+                                                <input type="text" class="form-control" name='note' placeholder="Enter detail" required>
+                                            </div>
+                                            <div class="col-md-12 text-center">
+                                                <button type="submit" class='btn btn-primary btn-sm' name='wallet_add' value="razorpay_security">Add</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col text-left">
+                                        <h4>Redeem Balance:</h4>
+                                    </div>
+                                    <div class="col-4 text-right">
+                                        <h3 class="card-title"><span style="color: green;">₹{{wallet.redeem_balance}}</span></h4>
+                                    </div>
+                                </div>
+                            </div>
+                                {% comment %} <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_GCPON5lWPycDOy"> </script> </form> {% endcomment %}
+
+                                <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_GCPV6QE5GuuiPG"> </script> </form>
+                            <!-- <hr>
+                            <div class="card-footer">
+                                <div class="stats">
+                                    <i class="material-icons">date_range</i> Last 24 Hours
+                                </div>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}{% block sidebar %}
+    <ul class="nav">
+         
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_owners' %}">
+                <i class="material-icons">person</i>
+                <p>Owners</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_car_types' %}">
+                <i class="material-icons">local_taxi</i>
+                <p>Car Types</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_drivers' %}">
+                <i class="material-icons">assignment_ind</i>
+                <p>Drivers</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_cars' %}">
+                <i class="material-icons">directions_car</i>
+                <p>Cars</p>
+            </a>
+        </li>
+        <li class="nav-item ">
+            <a class="nav-link" href="{% url 'admin_customers' %}">
+                <i class="material-icons">people_alt</i>
+                <p>Customers</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_trips' %}">
+                <i class="material-icons">navigation</i>
+                <p>Trips</p>
+            </a>
+        </li>
+    </ul>
+    {% endblock %}

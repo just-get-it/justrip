@@ -1,0 +1,226 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Owner Post Trip{% endblock %} {% block customcss %}
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+{% load mapbox_location_field_tags %} {% location_field_includes %} {% include_jquery %} {% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if profile.is_verified %}
+                <div class="alert alert-success">
+                    <span> Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Verification Pending</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <form method="GET" onsubmit="return submit_pickup_location()">
+            {% if not trip_type %}
+            <div class="row">
+                <div class="col">
+                    <h6>Trip Type:</h6>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <input required id="local" type="radio" name="trip_perimeter" value="local"checked>
+                    <label for="local">Local Trip</label><br>
+                </div>
+                <div class="col-md-3">
+                    <input required id="outstation" type="radio" name="trip_perimeter" value="outstation">
+                    <label for="outstation">Out Station Trip</label><br>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2">
+                    <input required id="oneway" type="radio" name="trip_type" value="oneway" onclick="disable_days()" checked>
+                    <label for="oneway">One Way Trip</label><br>
+                </div>
+                <div class="col-md-2">
+                    <input required id="round" type="radio" name="trip_type" value="round" onclick="enable_days()">
+                    <label for="round">Round Trip</label><br>
+                </div>
+                <div class="col-md-3">
+                    <label style="display: none;" id="days_label">Select no of days:</label>
+                    <select class="form-control" id='days' name='days' style="display: none;" disabled>
+                        <option value="1">Same Day</option>
+                        <option value="2">2 Days</option>
+                        <option value="3">3 Days</option>
+                        <option value="4">4 Days</option>
+                        <option value="5">5 Days</option>
+                        <option value="6">6 Days</option>
+                        <option value="7">7 Days</option>
+                        <option value="8">8 Days</option>
+                        <option value="9">9 Days</option>
+                        <option value="10">10 Days</option>
+                        <option value="11">11 Days</option>
+                        <option value="12">12 Days</option>
+                        <option value="13">13 Days</option>
+                    </select>
+                </div>
+                <div class="col-1">
+
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary">Next</button>
+                </div>
+            </div>
+            {% endif %}
+            <div class="row">
+                <div class="col">
+                    <h5 class="text-white"><i class="material-icons">pin_drop</i><span id='display_address'></span></h5>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    {{tform | crispy}}
+                </div>
+                {% if trip_type %}
+                <div class="col">
+                    <input  type="hidden" name="trip_perimeter" value="{{trip_perimeter}}">
+                    <input type="hidden" name="trip_type" value="{{trip_type}}">
+                    <input type="hidden" name="days" value="{{days}}">
+                    <button type="submit" class="btn btn-primary">Next</button>
+                </div>
+                {% endif %}
+            </div>{{ tform.media }}
+        </form>
+        <br>
+    </div>
+</div>
+{% endblock %} {% block customjs %}
+<script>
+    var loc = []
+
+    function mumbojumbo() {
+        // location = $('#map').val();
+        // console.log(location);
+
+        // $.ajax({
+        //     type: 'POST',
+        //     url: "",
+        //     data: {
+        //         get_address: true,
+        //         location: location,
+        //         csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+        //     },
+        //     cache: false,
+        //     dataType: "json",
+        //     success: function(data) {
+        //         console.log(data)
+        //         $.notify({
+        //             icon: "add_alert",
+        //             message: 'Address selected!'
+
+        //         }, {
+        //             type: 'success',
+        //             timer: 3000,
+        //             placement: {
+        //                 from: 'top',
+        //                 align: 'center'
+        //             }
+        //         });
+        //     }
+        // });
+    }
+
+    function enable_days() {
+        $('#days').removeAttr('disabled');
+        $('#days').show();
+        $('#days_label').show();
+    }
+
+    function disable_days() {
+        $('#days').attr({
+            'disabled': 'True'
+        });
+        $('#days').hide();
+        $('#days_label').hide();
+    }
+
+    function submit_pickup_location() {
+        var pickup_location = $('#map').val();
+        if (pickup_location == "") {
+            alert("Kindly Select Pickup Location");
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
+    function ImgDisplay(input, Id) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            console.log('Reading');
+            reader.onload = function(e) {
+                $('#' + Id).attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]); // convert to base64 string
+        }
+    }
+</script>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+       
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_driver_details' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Diver Profile</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'owner_car' %}">
+            <i class="material-icons">directions_car</i>
+            <p>My Car</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'owner_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

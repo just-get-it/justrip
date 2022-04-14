@@ -1,0 +1,306 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Admin Add Car{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if carform.instance.is_verified %}
+                <div class="alert alert-success">
+                    <span>Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span>Verification Pending</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header card-header-primary">
+                        {% if carform.instance.is_verified %}
+                        <h4 class="card-title">Car Details</h4>
+                        <form method="POST">
+                            {% csrf_token %} {% if staff %}
+                            <div class="col-6">
+                                <button class="btn btn-danger" disabled>Un-Verify</button>
+                            </div>
+                            {% else %}
+                            <button type="submit" value="true" class="btn btn-danger" name="unverify">Un-Verify</button> {% endif %}
+                        </form>
+                        {% else %}
+                        <h4 class="card-title">Unverified Car Details</h4>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <button type="submit" value="true" class="btn btn-success" name="verify">Verify</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% if staff %}
+                        <fieldset disabled>
+                            {% endif %}
+                            <form method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h5>Car Details:</h5>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        {{carform.type | as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3">
+                                        {{carform.company | as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3">
+                                        {{carform.name | as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3">
+                                        {{carform.licence_plate_no | as_crispy_field}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h5>RC Book Details:</h5>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        {{carform.owner_name| as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3">
+                                        {{carform.car_year| as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3">
+                                        {{carform.rc_book_expiry_date| as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3">
+                                        {{carform.chassi_number| as_crispy_field}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 text-center">
+                                        {% if carform.instance.rc_book_front %}
+                                        <img id="rc_book_front_display" class="img" src="{{carform.instance.rc_book_front.url}}" height="150"> {% else %}
+                                        <img id="rc_book_front_display" class="img" height="150">{% endif %} {{carform.rc_book_front | as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-6 text-center">
+                                        {% if carform.instance.rc_book_back %}
+                                        <img id="rc_book_back_display" class="img" src="{{carform.instance.rc_book_back.url}}" height="150"> {% else %}
+                                        <img id="rc_book_back_display" class="img" height="150">{% endif %} {{carform.rc_book_back | as_crispy_field}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h5>Insurance Details:</h5>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        {{carform.insurance_no| as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{carform.insurance_expiry_date| as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{carform.insurance_company| as_crispy_field}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 text-center">
+                                        {% if carform.instance.insurance_picture %}
+                                        <img id="insurance_picture_display" class="img" src="{{carform.instance.insurance_picture.url}}" height="150"> {% else %}
+                                        <img id="insurance_picture_display" class="img" src="{% static 'img/car_insurance.jpg' %}" height="150">{% endif %} {{carform.insurance_picture | as_crispy_field}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h5>Car Fitness:</h5>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 text-center">
+                                        {% if carform.instance.fitness_certificate %}
+                                        <img id="fitness_certificate_display" class="img" src="{{carform.instance.fitness_certificate.url}}" height="150"> {% else %}
+                                        <img id="fitness_certificate_display" class="img" height="150">{% endif %} {{carform.fitness_certificate | as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{carform.fitness_expiry_date| as_crispy_field}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h5>Car Images:</h5>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 text-center">
+                                        {% if carform.instance.car_front %}
+                                        <img id="car_front_display" class="img" src="{{carform.instance.car_front.url}}" height="150"> {% else %}
+                                        <img id="car_front_display" class="img" height="150">{% endif %} {{carform.car_front | as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        {% if carform.instance.car_back %}
+                                        <img id="car_back_display" class="img" src="{{carform.instance.car_back.url}}" height="150"> {% else %}
+                                        <img id="car_back_display" class="img" height="150">{% endif %} {{carform.car_back | as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        {% if carform.instance.car_side_left %}
+                                        <img id="car_side_left_display" class="img" src="{{carform.instance.car_side_left.url}}" height="150"> {% else %}
+                                        <img id="car_side_left_display" class="img" height="150">{% endif %} {{carform.car_side_left | as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        {% if carform.instance.car_side_right %}
+                                        <img id="car_side_right_display" class="img" src="{{carform.instance.car_side_right.url}}" height="150"> {% else %}
+                                        <img id="car_side_right_display" class="img" height="150">{% endif %} {{carform.car_side_right | as_crispy_field}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 text-center">
+                                        {% if carform.instance.car_interior_front %}
+                                        <img id="car_interior_front_display" class="img" src="{{carform.instance.car_interior_front.url}}" height="150"> {% else %}
+                                        <img id="car_interior_front_display" class="img" height="150">{% endif %} {{carform.car_interior_front | as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        {% if carform.instance.car_interior_back %}
+                                        <img id="car_interior_back_display" class="img" src="{{carform.instance.car_interior_back.url}}" height="150"> {% else %}
+                                        <img id="car_interior_back_display" class="img" height="150">{% endif %} {{carform.car_interior_back | as_crispy_field}}
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        {% if carform.instance.car_dickie %}
+                                        <img id="car_dickie_display" class="img" src="{{carform.instance.car_dickie.url}}" height="150"> {% else %}
+                                        <img id="car_dickie_display" class="img" height="150">{% endif %} {{carform.car_dickie | as_crispy_field}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 text-center">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </div>
+                                </div>
+                            </form>
+                            {% if staff %}
+                        </fieldset>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <h3>History:</h3>
+                {% for event in events %}
+                <div class="card text-white">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col text-left">
+                                <p>{{event.email}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <h5>{{event.text}}</h5>
+                            </div>
+                            <div class="col-4 text-right">
+                                <p>{{event.time}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block customjs %}
+<script>
+    function ImgDisplay(input, Id) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            console.log('Reading');
+            reader.onload = function(e) {
+                $('#' + Id).attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]); // convert to base64 string
+        }
+    }
+</script>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_unverified_trips' %}">
+            <i class="material-icons">navigation</i>
+            <p>Trips</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_customers' %}">
+            <i class="material-icons">people_alt</i>
+            <p>Customers</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'admin_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>Cars</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_owners' %}">
+            <i class="material-icons">person</i>
+            <p>Owners</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_car_types' %}">
+            <i class="material-icons">local_taxi</i>
+            <p>Car Types</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_charts' %}">
+            <i class="material-icons">assessment</i>
+            <p>Graphs</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

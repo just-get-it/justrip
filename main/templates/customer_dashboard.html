@@ -1,0 +1,81 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %}{% block title %}Justrip | Customer Dashboard{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <a href="{% url 'customer_details' %}" class="btn btn-primary">My Profile</a>
+                <a href="{% url 'customer_create_trip' %}" class="btn btn-primary">Create Trip</a>
+                <a href="{% url 'customer_active_bookings' %}" class="btn btn-primary">My Trips</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block customjs %}
+<script>
+$(document).ready(function() {
+            $("#dash").addClass("active");
+        });
+</script>
+{% endblock %}
+{% block sidebar %}
+<ul class="nav">
+    
+
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'customer_create_trip' %}">
+            <i class="material-icons">alt_route</i>
+            <p>Create Trip</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'customer_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'customer_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

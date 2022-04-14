@@ -1,0 +1,144 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Vendor Notifications{% endblock %} 
+<span></span>{% block content %}
+<div class="content text-white">
+    <div class="container-fluid">
+        {% csrf_token %}
+        {% if trip.round_trip == True %}
+        <h4>Round trip</h4>
+        <p>Total days:   {{ trip.days}}</p>
+        {% else %}
+        <h4>One way</h4>
+        {% endif %}
+        <table class="table table-striped table-dark">
+            <tbody>
+                <tr>
+                    <th scope="row">Trip id</th>
+                    <td>{{trip.trip_no}}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Pickup Location</th>
+                    <td>{{trip.pickup_address}}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Drop Location</th>
+                    <td>{{trip.drop_address}}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Departure time</th>
+                    <td>{{trip.pickup_date}}, {{trip.pickup_time}}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Drop time</th>
+                    <td>{{trip.drop_time}}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Car Type</th>
+                    <td>{{trip.car_type}}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Vendor amount</th>
+                    <td>{{trip.vendor_amount}}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Toll charges</th>
+                    <td>{{trip.toll_charges}}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Total distance</th>
+                    <td>{{trip.distance}} km</td>
+                </tr>
+                <tr>
+                    <th scope="row">Driver amount</th>
+                    <td>{{trip.total_driver_allowance}}</td>
+                </tr>
+            </tbody>
+          </table>
+      
+        <button class="btn btn-primary" id="accept" onclick="accept_function()">Accept</button>
+        <button class="btn btn-primary" id="reject" onclick="reject_function()">Reject</button>
+
+    </div>
+</div>
+<script>
+
+// $(document).ready(function() {
+//     $(document).on('click', '#accept', function(e) {
+//         e.preventDefault();
+//         alert('Please')
+//         $.ajax({
+//             type: 'POST',
+//             action: 'owner_home',
+//             url: '',
+//             data: {
+//                 'trip_id': '{{trip.id}}',
+//                 csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+//             },
+//             cache: false,
+//             dataType: "json",
+//             success: function(data) {
+//                 console.log(data);
+//             }
+//         });
+//     })
+// })
+
+function accept_function(){
+    data = {
+        'accept': '{{trip.id}}',
+        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+    }
+    fetch(
+        'https://justcab.justgetit.in/owner_accept_trip/',    
+        {
+            method: 'POST',
+            // redirect: 'owner_details',
+            body: JSON.stringify(data),  
+            headers: {      
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                "X-CSRFTOKEN": $('input[name=csrfmiddlewaretoken]').val(),
+                // 'Content-Type': 'application/x-www-form-urlencoded',     //for testing 
+
+            }
+        }
+    ).then((response)=>{
+        if (response.status === 200){
+            console.log(response)
+            window.location.href = response.url
+        }
+    }).catch((error)=>{
+        console.log(error)
+    });
+}
+
+function reject_function(){
+    data = {
+        'reject': '{{trip.id}}',
+        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+    }
+    fetch(
+        'https://justcab.justgetit.in/owner_reject_trip/',    
+        {
+            method: 'POST',
+            // redirect: 'owner_details',
+            body: JSON.stringify(data),  
+            headers: {      
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                "X-CSRFTOKEN": $('input[name=csrfmiddlewaretoken]').val(),
+                // 'Content-Type': 'application/x-www-form-urlencoded',     //for testing 
+
+            }
+        }
+    ).then((response)=>{
+        if (response.status === 200){
+            console.log(response)
+            window.location.href = response.url
+        }
+    }).catch((error)=>{
+        console.log(error)
+    });
+}
+
+</script>
+{% endblock %}  

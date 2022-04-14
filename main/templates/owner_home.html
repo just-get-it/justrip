@@ -1,0 +1,247 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Owner Home{% endblock %} {% block customcss %}
+<link rel="stylesheet" href="{% static 'chosen/chosen.min.css' %}">
+<style>
+    .chosen-container {
+        width: 100% !important;
+        /* or any value that fits your needs */
+    }
+    
+    .chosen-container.chosen-container-multi .search-choice a {
+        background-color: green!important;
+        font-size: 14px!important;
+        color: white!important;
+        padding-left: 2px;
+        top: 6px!important;
+    }
+    
+    .chosen-choices {
+        background-image: unset!important;
+        background-color: #deeaee!important;
+        border-radius: 10px;
+    }
+    
+    .search-choice {
+        border-radius: 7px!important;
+    }
+</style>
+{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <a href="{% url 'owner_post_trip' %}" class="btn btn-primary">Post Trip</a>
+            </div>
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    {{state_form}}
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary" type="submit" name="update_states" value="True">Set States</button>
+                </div>
+            </div>
+        </form>
+        <div class="row">
+            <div class="col-md-12">
+                {% for trip in trips %}
+                <!-- WEB VIEW -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <img src="{{trip.0.car_type.picture.url}}" height="150">
+                                <hr>
+                                <p class="text-white">{{trip.0.car_type.name}} {{trip.0.car_type.description}}</p>
+                            </div>
+                            <div class="col-md">
+                                <div class="col-12 text-left">
+                                    <div class="row">
+                                        <div class="col text-left">
+                                            <h3 class="text-white">{{trip.0.distance}} Km</h3>
+                                        </div>
+                                        <div class="col text-right">
+                                            <h3 class="text-white">Rs.{{trip.0.vendor_amount}}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="col-12 text-left">
+                                    <h5><span class="material-icons ic-m">my_location</span> {{trip.0.pickup_address}}</h5>
+                                </div>
+                                <div class="col-12 text-left">
+                                    <h5><span class="material-icons ic-m">place</span> {{trip.0.drop_address}}</h5>
+                                </div>
+                                <hr>
+                                <div class="col-6 text-left">
+                                    <p class="text-white"><i class="material-icons ic-m">event</i> {{trip.0.pickup_date}} at <i class="material-icons ic-m">alarm_on</i> {{trip.0.pickup_time}} </p>
+                                </div>
+                                <div class="col-6 text-right">
+                                    {% if verified %}
+                                    <form method="POST">
+                                        {% csrf_token %}
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-accept-{{trip.0.id}}">
+                                        Accept
+                                      </button> {% if trip.1 %}
+                                        <button type="submit" class="btn btn-primary" name="reject" value="{{trip.0.id}}">Reject</button> {% else %}
+                                        <button type="submit" class="btn btn-primary" name="rejectowner" value="{{trip.0.id}}">Reject</button> {% endif %}
+                                        <div style="background-color: rgba(32,41,64,0.8);" class="modal fade" id="modal-accept-{{trip.0.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content" style="background-color: #202940;">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Are you sure you want to accept this trip?</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                              </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-md-12 text-center">
+                                                                <img src="{{trip.0.car_type.picture.url}}" height="150">
+                                                                <hr>
+                                                                <p class="text-white">{{trip.0.car_type.name}} {{trip.0.car_type.description}}</p>
+                                                            </div>
+                                                            <div class="col-12 text-left">
+                                                                <div class="row">
+                                                                    <div class="col text-left">
+                                                                        <h3 class="text-white">{{trip.0.distance}} Km</h3>
+                                                                    </div>
+                                                                    <div class="col text-right">
+                                                                        <h3 class="text-white">Rs.{{trip.0.vendor_amount}}</h3>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <hr>
+                                                            <div class="col-12 text-left">
+                                                                <h5><span class="material-icons ic-m">my_location</span> {{trip.0.pickup_address}}</h5>
+                                                            </div>
+                                                            <div class="col-12 text-left">
+                                                                <h5><span class="material-icons ic-m">place</span> {{trip.0.drop_address}}</h5>
+                                                            </div>
+                                                            <hr>
+                                                            <div class="col-6 text-right">
+                                                                <p class="text-white"><i class="material-icons ic-m">event</i> {{trip.0.pickup_date}} at <i class="material-icons ic-m">alarm_on</i> {{trip.0.pickup_time}} </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <p style="color: red;">*Failure to provide with car and driver on trip date will result in penalty</p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <form method="POST">
+                                                                        {% csrf_token %} {% if trip.1 %}
+                                                                        <button class="btn btn-success" value="{{trip.0.id}}" name="accept">Accept</button> {% else %}
+                                                                        <button class="btn btn-success" value="{{trip.0.id}}" name="acceptowner">Accept</button> {% endif %}
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    {% else %}
+                                    <button class="btn btn-primary" disabled>Accept</button> {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endblock %} {% block customjs %}
+    <script src="{% static 'chosen/chosen.jquery.min.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            $(".chosen-select").chosen()
+            $(".search-choice").css("background", "#4EA753");
+            $("#dash").addClass("active");
+        });
+        $(document).click(function() {
+            $(".search-choice").css({
+                "background": "#4EA753",
+                "padding": "5px 20px 5px 5px"
+            });
+            $(".search-choice span").css("font-size", "16px");
+            $(".search-choice-close").text("X")
+        });
+    </script>
+
+    {% endblock %} {% block sidebar %}
+    <ul class="nav">
+        {% comment %}   {% endcomment %}
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'owner_details' %}">
+                <i class="material-icons">account_box</i>
+                <p>My Profile</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'owner_driver_details' %}">
+                <i class="material-icons">assignment_ind</i>
+                <p>Diver Profile</p>
+            </a>
+        </li>
+        <li class="nav-item ">
+            <a class="nav-link" href="{% url 'owner_car' %}">
+                <i class="material-icons">directions_car</i>
+                <p>My Car</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'owner_active_bookings' %}">
+                <i class="material-icons">navigation</i>
+                <p>My Trips</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'owner_request_trip' %}">
+                <i class="material-icons">my_location</i>
+                <p>Request Trip</p>
+            </a>
+        </li>
+    </ul>
+    {% endblock %}

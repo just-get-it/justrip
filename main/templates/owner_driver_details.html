@@ -1,0 +1,269 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Owner Driver Details{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if drform.instance.is_verified %}
+                <div class="alert alert-success">
+                    <span> Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Verification Pending</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header card-header-primary">
+                        <h4 class="card-title">Edit Diver Details</h4>
+                        <p class="card-category">Complete your profile</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-3">
+                                <label>Current Location:</label>
+                            </div>
+                            <div class="col-5">
+                                <input id='loc' name="current_location" onkeyup="update_location(event)" class="form-control" value="{{drform.instance.current_location}}">
+                            </div>
+                            </form>
+                        </div>
+
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %} {% if drform.instance.is_verified %}
+                            <fieldset disabled="disabled">
+                                {% else %}
+                                <fieldset>
+                                    {% endif %}
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h5>Personal Details:</h5>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-5 p-3 border border-dark rounded">
+                                            {% if drform.instance.picture %}
+                                            <img id="picture_display" class="img" src="{{drform.instance.picture.url}}" height="100" width="100"> {% else %}
+                                            <img id="picture_display" class="img" src="{% static 'img/profile_pic_default.png' %}" height="100" width="100">{% endif %}<label>Profile Pic:</label> {{drform.picture}}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{drform.name | as_crispy_field}} {{drform.phone | as_crispy_field}} {{drform.taxi_badge_number | as_crispy_field}}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h5>Aadhar Details:</h5>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            {{drform.aadhar_card_number| as_crispy_field}}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 text-center border border-dark p-3 rounded">
+                                            {% if drform.instance.aadhar_front_image %}
+                                            <img id="aadhar_front_image_display" class="img" src="{{drform.instance.aadhar_front_image.url}}" height="150"> {% else %}
+                                            <img id="aadhar_front_image_display" class="img" src="{% static 'img/aadhar_front_image.jpg' %}" height="150">{% endif %}<label>Aadhar Card front:</label> {{drform.aadhar_front_image}}
+                                        </div>
+                                        <div class="col-md-6 text-center border border-dark p-3 rounded">
+                                            {% if drform.instance.aadhar_back_image %}
+                                            <img id="aadhar_back_image_display" class="img" src="{{drform.instance.aadhar_back_image.url}}" height="150">{% else %}
+                                            <img id="aadhar_back_image_display" class="img" src="{% static 'img/aadhar_back_image.jpg' %}" height="150">{% endif %}<label>Aadhar Card back:</label> {{drform.aadhar_back_image}}
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h5>Licence Details:</h5>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{drform.driving_licence_number | as_crispy_field}}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{drform.driving_licence_expiry_date | as_crispy_field}}
+                                        </div>
+                                    </div>
+                                    <div class="row border border-dark p-3 rounded">
+                                        <div class="col-md-6">
+                                            <label>Police Verification Document:</label> {% if drform.instance.police_verification %}
+                                            <img id="police_verification_display" class="img" src="{{drform.instance.police_verification.url}}" height="150"> {% else %}
+                                            <img id="police_verification_display" class="img" src="{% static 'img/police_verification.png' %}" height="150"> {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{drform.police_verification}}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 text-center border border-dark p-3 rounded">
+                                            {% if drform.instance.driving_licence_front %}
+                                            <img id="driving_licence_front_display" class="img" src="{{drform.instance.driving_licence_front.url}}" height="150"> {% else %}
+                                            <img id="driving_licence_front_display" class="img" src="{% static 'img/driving_licence_front.png' %}" height="150"> {% endif %}<label>Driving licence front:</label>{{drform.driving_licence_front}}
+                                        </div>
+                                        <div class="col-md-6 text-center border border-dark p-3 rounded">
+                                            {% if drform.instance.driving_licence_back %}
+                                            <img id="driving_licence_back_display" class="img" src="{{drform.instance.driving_licence_back.url}}" height="150"> {% else %}<img id="driving_licence_back_display" class="img" src="{% static 'img/driving_licence_back.png' %}"
+                                                height="150">{% endif %}<label>Driving licence back:</label> {{drform.driving_licence_back}}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 text-center">
+                                            <button type="submit" class="btn btn-primary">Save</button>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block customjs %}
+<script>
+    function update_location(e) {
+        if (e.code == "Enter") {
+            var location = $("#loc").val()
+            if (location.trim() !== "") {
+                $.ajax({
+                    type: 'POST',
+                    url: "",
+                    data: {
+                        update_location: true,
+                        location: location,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    cache: false,
+                    dataType: "json",
+                    success: function(data) {
+                        console.log(data)
+                        $.notify({
+                            icon: "add_alert",
+                            message: 'Location Updated Successfully!'
+
+                        }, {
+                            type: 'success',
+                            timer: 3000,
+                            placement: {
+                                from: 'top',
+                                align: 'center'
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    }
+</script>
+<script>
+    function ImgDisplay(input, Id) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            console.log('Reading');
+            reader.onload = function(e) {
+                $('#' + Id).attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]); // convert to base64 string
+        }
+    }
+</script>
+{% endblock %} {% block sidebar %} {% if owner %}
+<ul class="nav">
+       
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'owner_driver_details' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Diver Profile</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'owner_car' %}">
+            <i class="material-icons">directions_car</i>
+            <p>My Car</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'owner_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+</ul>
+{% else %}
+<ul class="nav">
+    
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'vendor_home' %}">
+            <i class="material-icons">home</i>
+            <p>Home</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'owner_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'vendor_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'vendor_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>My Cars</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'vendor_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+</ul>
+{% endif %} {% endblock %}

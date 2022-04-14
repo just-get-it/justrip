@@ -1,0 +1,152 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Vendor Driver Locations{% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-1">
+                <a href="{% url 'vendor_add_driver' %}" class="btn btn-primary">Add Driver</a>
+            </div>
+        </div>
+        <br>
+        <br>
+        <div class="row">
+            {% csrf_token %}
+            <input class="form-control" id="tableSearch" type="text" placeholder="Search.."> {% for driver in drivers %} {% endfor %}
+            <table style="min-height: 10" class="table table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Sr No.</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Location</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTable">
+                    {% for driver in drivers %}
+                    <tr>
+                        <th scope="row">{{ driver.name }}</th>
+                        <td>{{driver.phone}}</td>
+                        <td><input class="form-control" onkeyup="update_location(event, '{{driver.id}}')" id="loc-{{driver.id}}" type="text" name="current_location" value="{{driver.current_location}}"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block customjs %}
+<script>
+    // Table filter
+    $(document).ready(function() {
+        $("#tableSearch").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#reportTable tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+    // Update driver location
+    function update_location(e, driver_id) {
+        if (e.code == "Enter") {
+            var location = $("#loc-" + driver_id).val()
+            if (location.trim() !== "") {
+                $.ajax({
+                    type: 'POST',
+                    url: "",
+                    data: {
+                        update_location: true,
+                        driver_id: driver_id,
+                        location: location,
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    cache: false,
+                    dataType: "json",
+                    success: function(data) {
+                        console.log(data)
+                        $.notify({
+                            icon: "add_alert",
+                            message: 'Location Updated Successfully!'
+
+                        }, {
+                            type: 'success',
+                            timer: 3000,
+                            placement: {
+                                from: 'top',
+                                align: 'center'
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    }
+</script>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'vendor_home' %}">
+            <i class="material-icons">home</i>
+            <p>Home</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'owner_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'vendor_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'vendor_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>My Cars</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'vendor_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

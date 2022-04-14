@@ -1,0 +1,58 @@
+{% extends 'just_cabs_base.html' %} 
+{% load static %} 
+{% load crispy_forms_tags %} 
+{% block title %}Justrip | Customer Notifications {% endblock %} 
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header card-header-primary">
+                    <h4 class="card-title">Notifications</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            {% for n in notify %}
+                            <a href="{% url 'dashboard' %}">
+                                <h6 class="card-title">{{n.date}}</h6> 
+                                <div class="alert alert-success alert-with-icon" data-notify="container">
+                                    <i class="material-icons" data-notify="icon">add_alert</i>
+                                    <span data-notify="message">{{n.text}}</span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block sidebar %}
+<ul class="nav">
+    
+
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'customer_create_trip' %}">
+            <i class="material-icons">alt_route</i>
+            <p>Create Trip</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'customer_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'customer_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

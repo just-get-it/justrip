@@ -1,0 +1,206 @@
+{% extends 'just_cabs_base.html' %} {% load crispy_forms_tags %} {% load static %} {% block title %}Justrip | Customer Profile{% endblock %}{% block customcss %}
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+{% load mapbox_location_field_tags %} {% location_field_includes %} {% include_jquery %} {% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if profile.is_verified %}
+                <div class="alert alert-success">
+                    <span> Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Verification Pending</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header card-header-primary">
+                        {% if profile.is_verified %}
+                        <h4 class="card-title">Customer Profile</h4>
+                        <p class="card-category">Contact Justrip Support to make changes to your profile</p>
+                        {% else %}
+                        <h4 class="card-title">Edit Customer Profile</h4>
+                        <p class="card-category">Complete your profile</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %} {% if profile.is_verified %}
+                            <fieldset disabled="disabled">
+                                {% else %}
+                                <fieldset>
+                                    {% endif %}
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">Name</label>
+                                                <input type="text" class="form-control" name='name' value="{{details.name}}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">Email address</label>
+                                                <input type="email" class="form-control" value="{{details.email}}" disabled="">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">Phone No</label>
+                                                <input type="number" name='contact' class="form-control" maxlength="10" value="{{details.contact}}" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if profile.is_corporate %}
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">PAN</label>
+                                                <input type="text" class="form-control" name='pan' value="{{corp_profile.pan}}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">GST</label>
+                                                <input type="text" class="form-control" name="gst" value="{{corp_profile.gst}}" >
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group bmd-form-group">
+                                                {% if corp_profile.pan_image %}
+                                                <label class="bmd-label-static">Pan Card Image</label> <br>
+                                                <img id="pan_image_display" src="{{corp_profile.pan_image.url}}" height="250px">{% else %}
+                                                <label class="bmd-label-static">Example Pan Card</label> <br>
+                                                <img id="pan_image_display" src="{% static 'img/pan.jpg' %}" height="250px">{% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            {% if corp_profile.pan_image %}
+                                            <label class="bmd-label-static">Edit Pan Image</label>{% else %}
+                                            <label class="bmd-label-static">Add Pan Image</label>{% endif %}
+                                            <input type="file" name='pan_image' onchange="ImgDisplay(this, 'pan_image_display');">
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6 class="text-white"><i class="material-icons">pin_drop</i><span id="display_address">{% if profile.address_text %}{{profile.address_text}}{% endif %}</span></h6>
+                                            {{cform}}
+                                        </div>
+                                    </div>{{ cform.media }}
+                                    <button type="submit" class="btn btn-primary pull-right" name='update_profile' value="True">Update Profile</button>
+                                    <div class="clearfix"></div>
+                                </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-profile">
+                    <div class="card-avatar">
+                        {% if profile.profile_picture %}
+                        <img id="profile_picture" class="img" src="{{profile.profile_picture.url}}"> {% else %}
+                        <img id="profile_picture" class="img" src="{% static 'img/profile_pic_default.png' %}"> {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-category">{{details.email}}</h6>
+                        <h4 class="card-title">{{details.name}}</h4>
+                        <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                            Change Picture
+                          </a>
+                        <div class="collapse" id="collapseExample">
+                            <div class="card card-body">
+                                <form method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %} {% if profile.is_verified %}
+                                    <input type="file" name='profile_pic' class="form-control" onchange="ImgDisplay(this,'profile_picture');" disabled='disabled'>
+                                    <button type="submit" name='profile_pic_update' value="True" class="btn btn-primary" disabled='disabled'>Save</button>{% else %}
+                                    <input type="file" name='profile_pic' class="form-control" onchange="ImgDisplay(this,'profile_picture');">
+                                    <button type="submit" name='profile_pic_update' value="True" class="btn btn-primary">Save</button>{% endif %}
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+    </div>
+</div>
+{% endblock %} {% block customjs %}
+<script>
+    function ImgDisplay(input, Id) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            console.log('Reading');
+            reader.onload = function(e) {
+                $('#' + Id).attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]); // convert to base64 string
+        }
+    }
+</script>
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    
+
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'customer_create_trip' %}">
+            <i class="material-icons">alt_route</i>
+            <p>Create Trip</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'customer_details' %}">
+            <i class="material-icons">account_box</i>
+            <p>My Profile</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'customer_active_bookings' %}">
+            <i class="material-icons">navigation</i>
+            <p>My Trips</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}

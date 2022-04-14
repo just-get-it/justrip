@@ -1,0 +1,476 @@
+{% extends 'just_cabs_base.html' %} {% load static %} {% load crispy_forms_tags %} {% block title %}Justrip | Admin Confirm Trip{% endblock %} {% block customcss %}
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+<style>
+    #map {
+        /* position: absolute; */
+        top: 0;
+        bottom: 0;
+        width: 100%;
+    }
+    /* #instructions {
+        position: absolute;
+        margin: 20px;
+        width: 25%;
+        top: 0;
+        bottom: 20%;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.9);
+        overflow-y: scroll;
+        font-family: sans-serif;
+        font-size: 0.8em;
+        line-height: 2em;
+    } */
+    /* .duration {
+        font-size: 2em;
+    } */
+    
+    .ic-m {
+        font-size: medium!important;
+    }
+</style>
+{% load mapbox_location_field_tags %} {% location_field_includes %} {% include_jquery %} {% endblock %} {% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                {% if profile.is_verified %}
+                <div class="alert alert-success">
+                    <span> Verified Successfully</span>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <span> Verification Pending</span>
+                </div>
+                {% endif %} {% if messages %} {% for message in messages %} {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>{{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <i class="material-icons">close</i>
+                    </button>
+                    <span>
+                        {{message}}</span>
+                </div>
+                {% endif %} {% endfor %} {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header card-header-primary">
+                        <div class="row">
+                            <div class="col-6 text-left">
+                                <h3 class="card-title">Confirm {% if trip_type == 'oneway' %} One Way Trip {% else %} Round Trip {% endif %} Booking </h3>
+                            </div>
+                            <div class="col-3 text-right">
+                                <h3 class="card-title">Rs.{{vendor_amount}} </h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col">
+                                        <h6>{{car_type.name}} {{car_type.description}}</h6>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <img src="{{car_type.picture.url}}" height="150">
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <h6>Pickup Date:</h6>
+                                        <h4><i class="material-icons ic-m">event</i>{{pickup_date}}</h4>
+                                    </div>
+                                    <div class="col-4">
+                                        <h6>Pickup Time:</h6>
+                                        <h4><i class="material-icons ic-m">alarm_on</i>{{pickup_time}}</h4>
+                                    </div>
+                                    <div class="col-4">
+                                        <h6>Distance:</h6>
+                                        <h4><i class="material-icons ic-m">multiple_stop</i>{{distance}} Km</h4>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h5><span class="material-icons ic-m">my_location</span> {{pickup_address}}</h5>
+                                    </div>
+                                    <div class="col-12">
+                                        <h5><span class="material-icons ic-m">place</span> {{drop_address}}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr> {% csrf_token %} {% if request.user.is_authenticated %}
+                        <div class="col-md-12">
+                            <form method="POST">
+                                {% csrf_token %}
+                                <div class="row text-center">
+                                    <div class="col text-center">
+                                        <button type="button" class="btn btn-primary" onclick="hide();" id="traveller_form_collaps">Add Travellers information</button>
+                                    </div>
+                                    <div class="col text-center">
+                                        <label for='demo'>Is demo trip?</label>
+                                        <input type="checkbox" name="demo" id='demo'>
+                                        <button class="btn btn-primary" name="confirm_without_traveller" value="true" type="submit">Confirm Booking</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="collapse" id="travellers_form">
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">Name</label>{{trform.name}}
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">Phone</label>{{trform.phone}}</div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">Email</label>{{trform.email}}</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">Traveller Address</label>{{trform.address}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">No of bags: </label>{{trform.no_of_bags}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">No of Travellers</label>{{trform.no_of_travellers}}</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <label class="bmd-label-floating">Carrier Required?</label>{{trform.carrier_required}}
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group bmd-form-group">
+                                                <label class="bmd-label-floating">Special Instructions</label>{{trform.special_instructions}}</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <h6 class="text-white">Payment Options:</h6>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <input required id="pay_later" type="radio" name="payment_method" value="pay_later" checked>
+                                            <label for="pay_later">Pay later to driver</label><br>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input required id="pay_now" type="radio" name="payment_method" value="pay_now">
+                                            <label for="pay_now">Pay now using online payment</label><br>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div class="col text-center">
+                                            <button type="submit" name="confirm_booking" value="True" class="btn btn-primary">Book Now</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                        {% else %}
+                        <div class="col-md-12 text-center">
+                            <p>Please login to start booking</p>
+                            <a class="btn btn-primary" href="{% url 'login_page' %}">Confirm Booking</a>
+                        </div>
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-8">
+                                <div id="map" style='height: 400px;'></div>
+                            </div>
+                            <div class="col-4">
+                                <div id="instructions" style='height: 400px; overflow: auto;'></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block customjs %}
+<script>
+    function hide() {
+        $('#travellers_form').collapse('toggle');
+        $('#traveller_form_collaps').hide();
+    }
+
+    function get_cost() {
+        type_id = $('#id_car_type').val();
+        round_trip = $('#id_round_trip').val();
+        console.log(type_id);
+        if (type_id != null) {
+            $.ajax({
+                type: 'POST',
+                action: 'get_cost',
+                url: '',
+                data: {
+                    'type_id': type_id,
+                    'distance': dist,
+                    'round_trip': round_trip,
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                },
+                cache: false,
+                dataType: "json",
+                success: function(data) {
+                    console.log(data);
+                }
+
+            });
+        }
+    }
+</script>
+<script>
+    var dist = 0
+    var pickup_location_string = '{{pickup_location}}';
+    var drop_location_string = '{{drop_location}}';
+    var temp_p = pickup_location_string.split(',');
+    var temp_d = drop_location_string.split(',');
+    var pickup_location = [];
+    var drop_location = [];
+    temp_p.forEach(cordinate => {
+        console.log(cordinate);
+        cordinate = parseFloat(cordinate);
+        pickup_location.unshift(cordinate)
+        console.log(cordinate);
+    });
+    temp_d.forEach(cordinate => {
+        console.log(cordinate);
+        cordinate = parseFloat(cordinate);
+        drop_location.unshift(cordinate)
+        console.log(cordinate);
+    });
+    console.log(pickup_location_string);
+    console.log(pickup_location);
+    console.log(drop_location_string);
+    console.log(drop_location);
+
+
+
+
+    // add the JavaScript here
+    mapboxgl.accessToken = 'pk.eyJ1IjoianVzdGNhYnMiLCJhIjoiY2toc241bG1xMHVsZDJxa3ozYnF3dXRsaCJ9.T2rWGRtN1od9-w0iIRFYjg';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v10',
+        center: pickup_location, // starting position
+        zoom: 7
+    });
+    var canvas = map.getCanvasContainer();
+
+    var start = pickup_location;
+
+    function getRoute(end) {
+        var start = pickup_location;
+        var url = 'https://api.mapbox.com/directions/v5/mapbox/driving/' + start[0] + ',' + start[1] + ';' + end[0] + ',' + end[1] + '?steps=true&geometries=geojson&access_token=' + mapboxgl.accessToken;
+
+        // make an XHR request https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
+        var req = new XMLHttpRequest();
+        req.open('GET', url, true);
+        req.onload = function() {
+            var json = JSON.parse(req.response);
+            var data = json.routes[0];
+            var route = data.geometry.coordinates;
+            var geojson = {
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                    type: 'LineString',
+                    coordinates: route
+                }
+            };
+            // if the route already exists on the map, reset it using setData
+            if (map.getSource('route')) {
+                map.getSource('route').setData(geojson);
+            } else { // otherwise, make a new request
+                map.addLayer({
+                    id: 'route',
+                    type: 'line',
+                    source: {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            properties: {},
+                            geometry: {
+                                type: 'LineString',
+                                coordinates: geojson
+                            }
+                        }
+                    },
+                    layout: {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    paint: {
+                        'line-color': '#3887be',
+                        'line-width': 5,
+                        'line-opacity': 0.75
+                    }
+                });
+            }
+
+            var instructions = document.getElementById('instructions');
+            console.log(data);
+            var steps = data.legs[0].steps;
+            dist = Math.floor(data.distance / 1000);
+            var tripInstructions = [];
+            for (var i = 0; i < steps.length; i++) {
+                tripInstructions.push('<br><li>' + steps[i].maneuver.instruction) + '</li>';
+                instructions.innerHTML = '<br><h4 style="color: white;">Trip duration: ' + Math.floor(data.duration / 60) + ' min <span class="material-icons">alarm</span> </h4>' + '<h4 style="color: white;"> Trip Distance: ' + Math.floor(data.distance / 1000) + ' Kilometers </h4>' + tripInstructions;
+            }
+        };
+        req.send();
+    }
+
+    map.on('load', function() {
+        getRoute(start);
+
+        map.addLayer({
+            id: 'point',
+            type: 'circle',
+            source: {
+                type: 'geojson',
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                            type: 'Point',
+                            coordinates: start
+                        }
+                    }]
+                }
+            },
+            paint: {
+                'circle-radius': 7,
+                'circle-color': '#3887be'
+            }
+        });
+        var end = {
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                    type: 'Point',
+                    coordinates: drop_location
+                }
+            }]
+        };
+        if (map.getLayer('end')) {
+            map.getSource('end').setData(end);
+        } else {
+            map.addLayer({
+                id: 'end',
+                type: 'circle',
+                source: {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: [{
+                            type: 'Feature',
+                            properties: {},
+                            geometry: {
+                                type: 'Point',
+                                coordinates: drop_location
+                            }
+                        }]
+                    }
+                },
+                paint: {
+                    'circle-radius': 7,
+                    'circle-color': '#f30'
+                }
+            });
+        }
+        getRoute(drop_location);
+    });
+</script>
+
+{% endblock %} {% block sidebar %}
+<ul class="nav">
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_unverified_trips' %}">
+            <i class="material-icons">navigation</i>
+            <p>Trips</p>
+        </a>
+    </li>
+    <li class="nav-item ">
+        <a class="nav-link" href="{% url 'admin_customers' %}">
+            <i class="material-icons">people_alt</i>
+            <p>Customers</p>
+        </a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'admin_cars' %}">
+            <i class="material-icons">directions_car</i>
+            <p>Cars</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_drivers' %}">
+            <i class="material-icons">assignment_ind</i>
+            <p>Drivers</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_owners' %}">
+            <i class="material-icons">person</i>
+            <p>Owners</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_car_types' %}">
+            <i class="material-icons">local_taxi</i>
+            <p>Car Types</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'admin_charts' %}">
+            <i class="material-icons">assessment</i>
+            <p>Graphs</p>
+        </a>
+    </li>
+</ul>
+{% endblock %}
