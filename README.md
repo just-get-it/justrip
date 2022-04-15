@@ -1,2 +1,2 @@
 # Justrip
-[Installation guidelines](../blob/main/installation.md)
+[Installation guidelines](../main/installation.md)
