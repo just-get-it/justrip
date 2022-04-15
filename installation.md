@@ -1,11 +1,11 @@
-## __*Setting up in your local system*__
+# __*Installation Guidelines*__
 
 #### Prerequisites:
 * Python-3 https://www.python.org/downloads/
 * Postgresql-10 https://www.postgresql.org/download/
 
 #### Guidelines
-* download the source code
+* Download the source code
 ```shell
 git clone https://github.com/just-get-it/justrip.git
 ```
@@ -26,11 +26,12 @@ _move to the main directory -> justrip_
   ```shell
   .\venv\Scripts\activate
   ```
-  \
+ 
   _for Linux/Mac Users_
   ```shell
   source venv/bin/activate
   ```
+  
   * Install all the requirements 
   ```shell
   pip install -r requirements.txt
@@ -38,16 +39,40 @@ _move to the main directory -> justrip_
  
   
 * Setting up database<br>
-  You need to create a database named qp using pgAdmin or command and update credentials in settings.py
+
+ By default, Postgres uses an authentication scheme called “peer authentication” for local connections. Basically, this means that if the user’s operating system  username matches a valid Postgres username, that user can login with no further authentication.
+
+ During the Postgres installation, an operating system user named postgres was created to correspond to the postgres PostgreSQL administrative user. We need to use this user to perform administrative tasks. We can use sudo and pass in the username with the -u option.
+ 
+ Open your psql prompt
+
+  prees enter until you need to enter password
   
   * Creating database
   ```shell
-  python manage.py makemigrations
+  CREATE DATABASE justrip;
   ```
   
   * Creating user
   ```shell
-  python manage.py makemigrations
+  CREATE USER justgetit WITH PASSWORD 'justgetit-justrip@2022';
+  ```
+  
+   * Some django recommended settings
+  ```shell
+  ALTER ROLE justgetit SET client_encoding TO 'utf8';
+  ALTER ROLE justgetit SET default_transaction_isolation TO 'read committed';
+  ALTER ROLE justgetit SET timezone TO 'UTC';
+  ```
+  
+  * User access to administer our new database: 
+  ```shell
+   GRANT ALL PRIVILEGES ON DATABASE myproject TO myprojectuser;
+  ```
+  
+   * Exit out of the PostgreSQL prompt
+  ```shell
+    \q
   ```
   
   * Creating migrations 
@@ -60,7 +85,7 @@ _move to the main directory -> justrip_
   python manage.py migrate
   ```
   
-  * Creating super user(optional)
+  * Creating super user
   ```shell
   python manage.py createsuperuser
   ```
