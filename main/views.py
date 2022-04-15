@@ -16,7 +16,7 @@ import razorpay
 from wallet.models import *
 from .utils import send_email, generateOTP6digit, randomStringDigits
 from .trip_cost import getCharges
-from Justrip.settings import EMAIL_HOST_USER
+from justrip.settings import EMAIL_HOST_USER
 import pytz
 from webpush import send_user_notification
 from django.views.decorators.csrf import csrf_exempt

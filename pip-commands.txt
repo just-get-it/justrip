@@ -1,0 +1,8 @@
+pip install django-webpush
+pip install six
+pip install django-crispy-forms
+pip install django-mapbox-location-field
+pip install django-mathfilters
+pip install psycopg2-binary
+pip install razorpay
+pip install geocoder

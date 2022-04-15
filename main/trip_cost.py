@@ -85,10 +85,11 @@ def get_fuel_surge(charges, pickup_city="mumbai", drop_city="bengaluru"):
             elif fuel.fuel == "PETROL":
                 # print("petrol_fuel_surge: ",charges.petrol_fuel_surge)
                 return charges.petrol_fuel_surge
-    except Charges.DoesNotExist:
-        return 2
+    except Fuel_Route.DoesNotExist:
+        return 1
     except Exception as Arg:
         print("something went wrong", Arg)
+        return 1
 
 
 def getCharges(request,vehicle_group, vehicle_type, trip_type, trip_variant, trip_way, distance, time, pickup_time, pickup_date, days, pickup_city, drop_city, waiting_time=30):
@@ -303,7 +304,7 @@ def getCharges(request,vehicle_group, vehicle_type, trip_type, trip_variant, tri
             request, f"The {vehicle_type} type vehical service is not available, try others... ({Arg})")
         return None
 
-    except Exception as Arg:
-        print("something went wrong",Arg)
-        messages.error(request, f'something went wrong ({Arg})')
-        return None
+    # except Exception as Arg:
+    #     print("something went wrong",Arg)
+    #     messages.error(request, f'something went wrong ({Arg})')
+    #     return None

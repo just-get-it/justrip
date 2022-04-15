@@ -1,1 +1,0 @@
-pip install django==2 django-crispy_forms psycopg2  django-mapbox-location-field requests django-webpush

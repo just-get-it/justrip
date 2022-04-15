@@ -412,6 +412,9 @@ class Charges(models.Model):
     trip_variant = models.CharField(
         choices=TRIP_VARIANT_CHOICES, max_length=100)
     trip_way = models.CharField(choices=TRIP_WAY_CHOICES, max_length=100)
+    min_base_charge = models.FloatField()
+    redeem_wallet_percentage = models.FloatField(help_text="in percentage (%)",
+        default=0, blank=True, null=True)
     morning_traffic_surge_charge = models.FloatField(
         default=1)
     evening_traffic_surge_charge = models.FloatField(
@@ -447,13 +450,15 @@ class Charges(models.Model):
                                                                )
     driver_waiting_stay_allowances_charge = models.FloatField(default=1
                                                               )
-    min_base_charge = models.FloatField()
+    
     Kms_covered_in_base_fare = models.FloatField(default=1
                                                  )
     minimum_km = models.FloatField(default=1)
     rate_per_km = models.FloatField(default=1)
-    redeem_wallet_percentage = models.FloatField(help_text="in percentage (%)",
-        default=0, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.car} ({self.trip_type}-{self.trip_variant}-{self.trip_way})"
+    
 
 
 class Trip(models.Model):
