@@ -67,7 +67,7 @@ _move to the main directory -> justrip_
   
   * User access to administer our new database: 
   ```shell
-   GRANT ALL PRIVILEGES ON DATABASE myproject TO myprojectuser;
+   GRANT ALL PRIVILEGES ON DATABASE justrip TO justgetit;
   ```
   
    * Exit out of the PostgreSQL prompt

@@ -309,7 +309,7 @@ class CarType(models.Model):
         return str(self.name + ' ' + self.description)
 
 class VehicalType(models.Model):
-    group = models.ForeignKey(VehicalGroup, on_delete=models.CASCADE)
+    group = models.ManyToManyField(VehicalGroup)
     name = models.CharField(max_length=100, unique=True, primary_key=True)
     picture = models.FileField(upload_to=upload_vehicle_type_path)
     conviniance_charge = models.IntegerField(null=True, blank=True, default=10, help_text="In % (percentage)") 
